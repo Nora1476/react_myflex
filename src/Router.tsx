@@ -9,6 +9,10 @@ const Router = createBrowserRouter([
     element: <Home />,
   },
   {
+    path: `movies/:id`,
+    element: <Home />,
+  },
+  {
     path: `tv`,
     element: <Tv />,
   },

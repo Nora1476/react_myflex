@@ -5,6 +5,7 @@ import { makeImagePath } from "../utils";
 //AnimatePresence 컴포넌트가 render되거나 destroy 될 때 효과를 줄 수 있음
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import { PathMatch, useMatch, useNavigate } from "react-router-dom";
 
 const Wrapper = styled.div`
   background: black;
@@ -15,13 +16,13 @@ const Loader = styled.div`
   justify-content: center;
   align-items: center;
 `;
-const Banner = styled.div<{ bgPhoto: string }>`
+const Banner = styled.div<{ bgphoto: string }>`
   height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   padding: 60px;
-  background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7)), url(${(props) => props.bgPhoto});
+  background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7)), url(${(props) => props.bgphoto});
   background-size: cover;
 `;
 const Title = styled.h2`
@@ -39,56 +40,146 @@ const Slider = styled.div`
 `;
 const Row = styled(motion.div)`
   display: grid;
-  gap: 10px;
+  gap: 5px;
   grid-template-columns: repeat(6, 1fr);
   position: absolute;
   width: 100%;
 `;
-const Box = styled(motion.div)`
+const Box = styled(motion.div)<{ bgphoto: string }>`
   background-color: white;
+  background: url(${(props) => props.bgphoto}) center center / cover;
   height: 200px;
-  color: red;
   font-size: 66px;
+  cursor: pointer;
+  &:first-child {
+    transform-origin: center left;
+  }
+  &:last-child {
+    transform-origin: center right;
+  }
 `;
+const Info = styled(motion.div)`
+  padding: 10px;
+  background-color: ${(props) => props.theme.black.lighter};
+  opacity: 0;
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  h4 {
+    text-align: center;
+    font-size: 18px;
+  }
+`;
+
+const Overlay = styled(motion.div)`
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  /* opacity: 0; */
+`;
+const BigMovie = styled(motion.div)`
+  position: absolute;
+  width: 40vw;
+  height: 80vh;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+`;
+
+//Row 슬라이드시 너비 설정
 const rowVariants = {
   hidden: {
-    x: window.outerWidth + 10,
+    x: window.outerWidth + 5,
   },
   visible: {
     x: 0,
   },
   exit: {
-    x: -window.outerWidth - 10,
+    x: -window.outerWidth - 5,
+  },
+};
+//박스 Row내 박스 hover시 동작설정
+const boxVariants = {
+  normal: {
+    scale: 1,
+  },
+  hover: {
+    scale: 1.3,
+    y: -80,
+    transition: {
+      delay: 0.5,
+      duaration: 0.1,
+      type: "tween",
+    },
+  },
+};
+//박스내 hover시 같이뜨는 정보 동작설정
+const infoVariants = {
+  hover: {
+    opacity: 1,
+    transition: {
+      delay: 0.5,
+      duaration: 0.1,
+      type: "tween",
+    },
   },
 };
 
+const offset = 6;
+
 function Home() {
+  const navigate = useNavigate();
+  const bigMovieMatch: PathMatch<string> | null = useMatch("/movies/:movieId");
+  console.log(bigMovieMatch);
+
   // useQuery(키값지정, 데이터불러오는함수)
   const { data, isLoading } = useQuery<IGetMoviesResult>({ queryKey: ["movie", "nowPlaying"], queryFn: getMovies });
-  const [index, setIndex] = useState(0);
+
   //빠르게 여러번 동작할때 슬라이더 겹치지 않게 설정
-  const [leaving, setLeaving] = useState(false);
+  const [index, setIndex] = useState(0);
+
   //슬라이더의 key값을 바꿔주기위해 생성
+  const [leaving, setLeaving] = useState(false);
+
   const increaseIndex = () => {
-    if (leaving) return;
-    setLeaving(true);
-    setIndex((prev) => prev + 1);
+    if (data) {
+      if (leaving) return; //true이면 아래코드 실행X  Row가 빠르게 클릭할때 모션이 겹쳐보이는 현상을 막음
+      toggleLeaving();
+      const totalMovies = data.results.length - 1; //메인배경으로 쓰인 영화1개는 뺀 값
+      const maxIndex = Math.floor(totalMovies / offset) - 1; //페이지가 0에서 시작하기 때문에 ;
+      setIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
+    }
   };
-  const toggleLeaving = () => {};
+  const toggleLeaving = () => setLeaving((prev) => !prev);
+  const onBoxClicked = (movieId: number) => {
+    navigate(`/movies/${movieId}`);
+  };
+  const onOverlayclick = () => {
+    navigate(`${process.env.PUBLIC_URL}/`);
+  };
   return (
     <Wrapper>
       {isLoading ? (
         <Loader>Loading...</Loader>
       ) : (
         <>
-          <Banner onClick={increaseIndex} bgPhoto={makeImagePath(data?.results[0].backdrop_path || "")}>
+          <Banner
+            //motion.div 설정시 props bgphoto를 string으로 받을 수있는 type을 설정해둔 상태
+            onClick={increaseIndex}
+            bgphoto={makeImagePath(data?.results[0].backdrop_path || "")}
+          >
+            {/* 1. 베너 클릭할때 setIndex가 1씩 더해지면서 key 값을 인덱스를 늘려주어 새로운 Row생성효과  */}
             <Title>{data?.results[0].title}</Title>
             <OverView>{data?.results[0].overview}</OverView>
           </Banner>
           <Slider>
-            <AnimatePresence onExitComplete={}>
+            <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
+              {/* initial 이 false 일 경우 컴포넌트가 처음 마운트될때 오른쪽에서 들어오는 효과 없어짐 
+                  3. Row에 설정된 exit모션이 끝났을때 toggleLeaving동작하며 index + 1효과 */}
               <Row
-                //키값만 바꿔줘도 새로운 Row로 인식하여 슬라이드 동작
+                //2. 키값만 바꿔줘도 새로운 Row로 인식하여 슬라이드 동작
                 variants={rowVariants}
                 initial="hidden"
                 animate="visible"
@@ -96,12 +187,50 @@ function Home() {
                 transition={{ type: "tween", duration: 1 }}
                 key={index}
               >
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <Box key={i}>{i}</Box>
-                ))}
+                {data?.results
+                  .slice(1)
+                  .slice(offset * index, offset * index + offset)
+                  .map((movie) => (
+                    <Box
+                      //
+                      layoutId={movie.id + ""}
+                      key={movie.id}
+                      whileHover="hover"
+                      initial="normal"
+                      variants={boxVariants}
+                      transition={{ type: "tween" }}
+                      bgphoto={makeImagePath(movie.backdrop_path, "w500")}
+                      onClick={() => onBoxClicked(movie.id)}
+                    >
+                      <Info variants={infoVariants}>
+                        {/* 부모로부터 hover */}
+                        <h4>{movie.title}</h4>
+                      </Info>
+                    </Box>
+                  ))}
               </Row>
             </AnimatePresence>
           </Slider>
+          <AnimatePresence>
+            {bigMovieMatch ? (
+              <>
+                <Overlay onClick={onOverlayclick} />
+                <motion.div
+                  layoutId={bigMovieMatch.params.movieId}
+                  style={{
+                    position: "absolute",
+                    width: "40vw",
+                    height: "80vh",
+                    backgroundColor: "red",
+                    top: 50,
+                    left: 0,
+                    right: 0,
+                    margin: "0 auto",
+                  }}
+                />
+              </>
+            ) : null}
+          </AnimatePresence>
         </>
       )}
     </Wrapper>
