@@ -84,7 +84,7 @@ const BigMovie = styled(motion.div)`
   width: 40vw;
   height: 80vh;
   left: 50%;
-
+  transform: translateX(-50%) !important;
   margin: 0 auto;
   z-index: 99;
   background-color: red;
