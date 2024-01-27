@@ -3,7 +3,7 @@ import { IGetMoviesResult, getMovies } from "../api";
 import styled from "styled-components";
 import { makeImagePath } from "../utils";
 //AnimatePresence 컴포넌트가 render되거나 destroy 될 때 효과를 줄 수 있음
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll } from "framer-motion";
 import { useState } from "react";
 import { PathMatch, useMatch, useNavigate } from "react-router-dom";
 
@@ -77,15 +77,17 @@ const Overlay = styled(motion.div)`
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.6);
-  /* opacity: 0; */
+  opacity: 0;
 `;
 const BigMovie = styled(motion.div)`
-  position: absolute;
+  position: fixed;
   width: 40vw;
   height: 80vh;
-  left: 0;
-  right: 0;
+  left: 50%;
+
   margin: 0 auto;
+  z-index: 99;
+  background-color: red;
 `;
 
 //Row 슬라이드시 너비 설정
@@ -132,6 +134,7 @@ const offset = 6;
 function Home() {
   const navigate = useNavigate();
   const bigMovieMatch: PathMatch<string> | null = useMatch("/movies/:movieId");
+  const { scrollY } = useScroll();
   console.log(bigMovieMatch);
 
   // useQuery(키값지정, 데이터불러오는함수)
@@ -214,20 +217,10 @@ function Home() {
           <AnimatePresence>
             {bigMovieMatch ? (
               <>
-                <Overlay onClick={onOverlayclick} />
-                <motion.div
-                  layoutId={bigMovieMatch.params.movieId}
-                  style={{
-                    position: "absolute",
-                    width: "40vw",
-                    height: "80vh",
-                    backgroundColor: "red",
-                    top: 50,
-                    left: 0,
-                    right: 0,
-                    margin: "0 auto",
-                  }}
-                />
+                <Overlay onClick={onOverlayclick} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+                <BigMovie style={{ top: scrollY.get() + 100 }} layoutId={bigMovieMatch.params.movieId}>
+                  hello
+                </BigMovie>
               </>
             ) : null}
           </AnimatePresence>
