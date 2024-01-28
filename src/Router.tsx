@@ -17,7 +17,7 @@ const Router = createBrowserRouter([
     element: <Tv />,
   },
   {
-    path: `serch`,
+    path: `search`,
     element: <Search />,
   },
 ]);

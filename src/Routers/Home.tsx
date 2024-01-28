@@ -87,7 +87,28 @@ const BigMovie = styled(motion.div)`
   transform: translateX(-50%) !important;
   margin: 0 auto;
   z-index: 99;
-  background-color: red;
+  border-radius: 15px;
+  overflow: hidden;
+  background-color: ${(props) => props.theme.black.lighter};
+`;
+const BigCover = styled.div`
+  width: 100%;
+  background-size: cover;
+  background-position: center center;
+  height: 400px;
+`;
+const BigTitle = styled.h3`
+  color: ${(props) => props.theme.white.lighter};
+  padding: 20px;
+  font-size: 46px;
+  position: relative;
+  top: -80px;
+`;
+const BigOverview = styled.p`
+  padding: 20px;
+  position: relative;
+  top: -80px;
+  color: ${(props) => props.theme.white.lighter};
 `;
 
 //Row 슬라이드시 너비 설정
@@ -156,12 +177,18 @@ function Home() {
     }
   };
   const toggleLeaving = () => setLeaving((prev) => !prev);
+
+  //Row 슬라이드에 movie를 클릭하면 해당링크로 이동(상세페이지)
   const onBoxClicked = (movieId: number) => {
     navigate(`/movies/${movieId}`);
   };
+  //오버레이부분 클릭시 홈링크로 이동 (상세페이지 모달끄는 용도)
   const onOverlayclick = () => {
     navigate(`${process.env.PUBLIC_URL}/`);
   };
+  //Row 슬라이드에 movie 클릭이 상세페이지 정보 params으로 url내 movieId와 일치하는 data를 가져옴
+  const clickedMovie = bigMovieMatch?.params.movieId && data?.results.find((movie) => String(movie.id) === bigMovieMatch.params.movieId);
+  console.log(clickedMovie);
   return (
     <Wrapper>
       {isLoading ? (
@@ -219,7 +246,17 @@ function Home() {
               <>
                 <Overlay onClick={onOverlayclick} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
                 <BigMovie style={{ top: scrollY.get() + 100 }} layoutId={bigMovieMatch.params.movieId}>
-                  hello
+                  {clickedMovie && (
+                    <>
+                      <BigCover
+                        style={{
+                          backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(clickedMovie.backdrop_path, "w500")})`,
+                        }}
+                      />
+                      <BigTitle>{clickedMovie.title}</BigTitle>
+                      <BigOverview>{clickedMovie.overview}</BigOverview>
+                    </>
+                  )}
                 </BigMovie>
               </>
             ) : null}
