@@ -6,6 +6,8 @@ import { makeImagePath } from "../utils";
 import { motion, AnimatePresence, useScroll } from "framer-motion";
 import { useState } from "react";
 import { PathMatch, useMatch, useNavigate } from "react-router-dom";
+import RatedRow from "../Components/RatedRow";
+import UpcomingRow from "../Components/UpcomingRow";
 
 const Wrapper = styled.div`
   background: black;
@@ -84,7 +86,8 @@ const BigMovie = styled(motion.div)`
   width: 40vw;
   height: 80vh;
   left: 50%;
-  transform: translateX(-50%) !important;
+  top: 50%;
+  transform: translate(-50%, -50%) !important;
   margin: 0 auto;
   z-index: 99;
   border-radius: 15px;
@@ -155,7 +158,6 @@ const offset = 6;
 function Home() {
   const navigate = useNavigate();
   const bigMovieMatch: PathMatch<string> | null = useMatch("/movies/:movieId");
-  const { scrollY } = useScroll();
   console.log(bigMovieMatch);
 
   // useQuery(키값지정, 데이터불러오는함수)
@@ -241,11 +243,12 @@ function Home() {
               </Row>
             </AnimatePresence>
           </Slider>
+
           <AnimatePresence>
             {bigMovieMatch ? (
               <>
                 <Overlay onClick={onOverlayclick} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
-                <BigMovie style={{ top: scrollY.get() + 100 }} layoutId={bigMovieMatch.params.movieId}>
+                <BigMovie layoutId={bigMovieMatch.params.movieId}>
                   {clickedMovie && (
                     <>
                       <BigCover
@@ -261,6 +264,7 @@ function Home() {
               </>
             ) : null}
           </AnimatePresence>
+          <UpcomingRow />
         </>
       )}
     </Wrapper>

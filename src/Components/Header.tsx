@@ -144,7 +144,8 @@ function Header() {
   const navigate = useNavigate();
   const onValid = (data: IForm) => {
     // navigate에 state전달 하는 방법 navigate(to, { state: { key: value } });
-    navigate(`/search?keyword=${data.keyword}`, { state: { key: data.keyword } });
+    navigate(`/search?keyword=${data.keyword}`, { state: { key: data.keyword }, replace: true });
+    navigate(0);
     console.log(data.keyword);
   };
   return (
@@ -170,10 +171,16 @@ function Header() {
         </Link>
         <Items>
           <Item>
-            <Link to={`${process.env.PUBLIC_URL}/`}> Home{homeMatch && <Circle layoutId="circle" />}</Link>
+            <Link to={`${process.env.PUBLIC_URL}/`} reloadDocument>
+              {" "}
+              Home{homeMatch && <Circle layoutId="circle" />}
+            </Link>
           </Item>
           <Item>
-            <Link to="tv"> TV Show{tvMatch && <Circle layoutId="circle" />}</Link>
+            <Link to="tv" reloadDocument>
+              {" "}
+              TV Show{tvMatch && <Circle layoutId="circle" />}
+            </Link>
           </Item>
         </Items>
       </Col>
@@ -195,7 +202,7 @@ function Header() {
             <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"></path>
           </motion.svg>
           <Input
-            //
+            // input에 keyword에 대한 Validation을 설정
             {...register("keyword", { required: true, minLength: 2 })}
             animate={inputAnimation}
             initial={{ scaleX: 0 }}
