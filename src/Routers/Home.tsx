@@ -1,13 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { IGetMoviesResult, getMovies } from "../api";
+import { IGeRatedMoviesResult, IGetMoviesResult, getMovies, topRatedMovies } from "../api";
 import styled from "styled-components";
 import { makeImagePath } from "../utils";
 //AnimatePresence 컴포넌트가 render되거나 destroy 될 때 효과를 줄 수 있음
-import { motion, AnimatePresence, useScroll } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { PathMatch, useMatch, useNavigate } from "react-router-dom";
-import RatedRow from "../Components/RatedRow";
-import UpcomingRow from "../Components/UpcomingRow";
 
 const Wrapper = styled.div`
   background: black;
@@ -161,7 +159,9 @@ function Home() {
   console.log(bigMovieMatch);
 
   // useQuery(키값지정, 데이터불러오는함수)
-  const { data, isLoading } = useQuery<IGetMoviesResult>({ queryKey: ["movie", "nowPlaying"], queryFn: getMovies });
+  const { data: nowMovie, isLoading } = useQuery<IGetMoviesResult>({ queryKey: ["movie", "nowPlaying"], queryFn: getMovies });
+  const { data } = useQuery<IGeRatedMoviesResult>({ queryKey: ["movie", "top_rated"], queryFn: topRatedMovies });
+  console.log(data, isLoading);
 
   //빠르게 여러번 동작할때 슬라이더 겹치지 않게 설정
   const [index, setIndex] = useState(0);
@@ -170,10 +170,10 @@ function Home() {
   const [leaving, setLeaving] = useState(false);
 
   const increaseIndex = () => {
-    if (data) {
+    if (nowMovie) {
       if (leaving) return; //true이면 아래코드 실행X  Row가 빠르게 클릭할때 모션이 겹쳐보이는 현상을 막음
       toggleLeaving();
-      const totalMovies = data.results.length - 1; //메인배경으로 쓰인 영화1개는 뺀 값
+      const totalMovies = nowMovie.results.length - 1; //메인배경으로 쓰인 영화1개는 뺀 값
       const maxIndex = Math.floor(totalMovies / offset) - 1; //페이지가 0에서 시작하기 때문에 ;
       setIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
     }
@@ -188,8 +188,8 @@ function Home() {
   const onOverlayclick = () => {
     navigate(`${process.env.PUBLIC_URL}/`);
   };
-  //Row 슬라이드에 movie 클릭이 상세페이지 정보 params으로 url내 movieId와 일치하는 data를 가져옴
-  const clickedMovie = bigMovieMatch?.params.movieId && data?.results.find((movie) => String(movie.id) === bigMovieMatch.params.movieId);
+  //Row 슬라이드에 movie 클릭이 상세페이지 정보 params으로 url내 movieId와 일치하는 nowMovie를 가져옴
+  const clickedMovie = bigMovieMatch?.params.movieId && nowMovie?.results.find((movie) => String(movie.id) === bigMovieMatch.params.movieId);
   console.log(clickedMovie);
   return (
     <Wrapper>
@@ -200,11 +200,11 @@ function Home() {
           <Banner
             //motion.div 설정시 props bgphoto를 string으로 받을 수있는 type을 설정해둔 상태
             onClick={increaseIndex}
-            bgphoto={makeImagePath(data?.results[0].backdrop_path || "")}
+            bgphoto={makeImagePath(nowMovie?.results[0].backdrop_path || "")}
           >
             {/* 1. 베너 클릭할때 setIndex가 1씩 더해지면서 key 값을 인덱스를 늘려주어 새로운 Row생성효과  */}
-            <Title>{data?.results[0].title}</Title>
-            <OverView>{data?.results[0].overview}</OverView>
+            <Title>{nowMovie?.results[0].title}</Title>
+            <OverView>{nowMovie?.results[0].overview}</OverView>
           </Banner>
           <Slider>
             <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
@@ -219,7 +219,7 @@ function Home() {
                 transition={{ type: "tween", duration: 1 }}
                 key={index}
               >
-                {data?.results
+                {nowMovie?.results
                   .slice(1)
                   .slice(offset * index, offset * index + offset)
                   .map((movie) => (
@@ -241,6 +241,7 @@ function Home() {
                     </Box>
                   ))}
               </Row>
+              <Row></Row>
             </AnimatePresence>
           </Slider>
 
@@ -264,7 +265,6 @@ function Home() {
               </>
             ) : null}
           </AnimatePresence>
-          <UpcomingRow />
         </>
       )}
     </Wrapper>
