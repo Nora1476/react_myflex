@@ -14,13 +14,13 @@ const Loader = styled.div`
   justify-content: center;
   align-items: center;
 `;
-const Banner = styled.div<{ bgphoto: string }>`
+const Banner = styled.div<{ $bgPhoto: string }>`
   height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   padding: 60px;
-  background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7)), url(${(props) => props.bgphoto});
+  background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7)), url(${(props) => props.$bgPhoto});
   background-size: cover;
 `;
 const Title = styled.h2`
@@ -40,29 +40,25 @@ const Slider = styled.div`
   display: flex;
 `;
 const Row = styled(motion.div)`
+  width: 100%;
   display: grid;
   gap: 5px;
   grid-template-columns: repeat(6, 1fr);
-  position: absolute;
-  width: 100%;
+  /* position: absolute; */
 `;
 const Btn = styled.button`
   border: none;
   background: transparent;
-  position: absolute;
-  z-index: 2;
-  &:first-child {
-    left: 0;
-  }
-  &:last-child {
-    right: 0;
-  }
+  color: white;
 `;
-const Box = styled(motion.div)`
+const Box = styled(motion.div)<{ $bgPhoto: string }>`
+  width: 100%;
   background-color: white;
   height: 200px;
-  font-size: 66px;
   cursor: pointer;
+  font-size: 16px;
+  color: black;
+  background: url(${(props) => props.$bgPhoto}) center center/cover;
   &:first-child {
     transform-origin: center left;
   }
@@ -84,25 +80,65 @@ const Info = styled(motion.div)`
 
 //Row 슬라이드시 너비 설정
 const rowVariants = {
-  hidden: {
-    x: window.outerWidth + 5,
-  },
+  entry: (isBack: boolean) => ({
+    x: isBack ? -window.outerWidth - 5 : window.outerWidth + 5,
+    opacity: 0,
+    transition: {
+      duration: 0.5,
+    },
+  }),
   visible: {
     x: 0,
+    opacity: 1,
+    transition: {
+      duration: 1,
+    },
   },
-  exit: {
-    x: -window.outerWidth - 5,
-  },
+  exit: (isBack: boolean) => ({
+    x: isBack ? window.outerWidth + 5 : -window.outerWidth - 5,
+    opacity: 0,
+    transition: {
+      duration: 0.5,
+    },
+  }),
 };
+
+const offset = 6;
 
 function Tv() {
   //Tv현재 방영중인 데이터 받아오는 query 함수
   const { data: airing, isLoading } = useQuery<IGetTvsResult>({ queryKey: ["tv", "airing_today"], queryFn: getTvShows });
-  console.log(airing, isLoading);
 
-  const [index, setIndex] = useState(0);
-  const increseIndex = () => setIndex((prev) => prev + 1);
-  console.log(index);
+  //빠르게 여러번 동작할때 슬라이더 겹치지 않게 설정
+  const [leaving, setLeaving] = useState(false);
+
+  const [index, setIndex] = useState(0); //row의 key값으로 동작하여 새로운 row로 인식하도록 설정
+  const [isBack, setIsBack] = useState(false); // prev, next 버튼 구분
+
+  const totalMovie = (airing?.results.length as number) - 1; //배너로 사용한 영화1개는 제외
+  const maxIndex = Math.floor(totalMovie / offset) - 1;
+  const prevPlz = () => {
+    console.log("클릭", leaving, index);
+    if (airing) {
+      if (leaving) return;
+      toggleLeaving();
+      setIsBack(true);
+      setIndex((prev) => (prev === 0 ? maxIndex : prev - 1));
+    }
+  };
+
+  const nextPlz = () => {
+    console.log("클릭", leaving, index);
+    if (leaving) return; //슬라이드 처음 시작일 경우 false 값으로  아래 동작 실행
+    toggleLeaving();
+    setIsBack(false); //슬라이드 다음 버튼 모션동작 컨트롤
+    setIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
+  };
+
+  const toggleLeaving = () => {
+    console.log(leaving);
+    setLeaving((prev) => !prev);
+  };
 
   return (
     <Wrapper>
@@ -110,55 +146,37 @@ function Tv() {
         <Loader>Loading...</Loader>
       ) : (
         <>
-          <Banner bgphoto={makeImagePath(airing?.results[0].backdrop_path || "")}>
+          <Banner $bgPhoto={makeImagePath(airing?.results[0].backdrop_path || "")}>
             <Title>{airing?.results[0].name}</Title>
             <OverView>{airing?.results[0].overview}</OverView>
           </Banner>
 
           <Slider>
-            <Btn onClick={increseIndex}>prev</Btn>
-            <AnimatePresence>
+            <AnimatePresence initial={false} custom={isBack} onExitComplete={toggleLeaving}>
+              <Btn onClick={prevPlz} key={index + 2}>
+                prev
+              </Btn>
               <Row
                 //
+                custom={isBack}
                 variants={rowVariants}
-                initial="hidden"
+                initial="entry"
                 animate="visible"
                 exit="exit"
-                transition={{ type: "tween", duration: 0.5 }}
+                transition={{ type: "tween" }}
                 key={index}
               >
-                <Box />
-                <Box />
-                <Box />
-                <Box />
-                <Box />
-                <Box />
+                {airing?.results
+                  .slice(1)
+                  .slice(offset * index, offset * index + offset)
+                  .map((movie) => (
+                    <Box key={movie.id} $bgPhoto={makeImagePath(movie.backdrop_path, "w500")}></Box>
+                  ))}
               </Row>
+              <Btn onClick={nextPlz} key={index + 1}>
+                next
+              </Btn>
             </AnimatePresence>
-            <Btn onClick={increseIndex}>next</Btn>
-          </Slider>
-
-          <Slider>
-            <Btn onClick={increseIndex}>prev</Btn>
-            <AnimatePresence>
-              <Row
-                //
-                variants={rowVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                transition={{ type: "tween", duration: 0.5 }}
-                key={index}
-              >
-                <Box />
-                <Box />
-                <Box />
-                <Box />
-                <Box />
-                <Box />
-              </Row>
-            </AnimatePresence>
-            <Btn onClick={increseIndex}>next</Btn>
           </Slider>
         </>
       )}

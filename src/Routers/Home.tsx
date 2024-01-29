@@ -16,13 +16,13 @@ const Loader = styled.div`
   justify-content: center;
   align-items: center;
 `;
-const Banner = styled.div<{ bgphoto: string }>`
+const Banner = styled.div<{ $bgPhoto: string }>`
   height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   padding: 60px;
-  background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7)), url(${(props) => props.bgphoto});
+  background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7)), url(${(props) => props.$bgPhoto});
   background-size: cover;
 `;
 const Title = styled.h2`
@@ -37,17 +37,23 @@ const OverView = styled.p`
 const Slider = styled.div`
   position: relative;
   top: -100px;
+  display: flex;
 `;
 const Row = styled(motion.div)`
+  width: 100%;
   display: grid;
   gap: 5px;
   grid-template-columns: repeat(6, 1fr);
-  position: absolute;
-  width: 100%;
+  /* position: absolute; */
 `;
-const Box = styled(motion.div)<{ bgphoto: string }>`
+const Btn = styled.button`
+  border: none;
+  background: transparent;
+  color: white;
+`;
+const Box = styled(motion.div)<{ $bgPhoto: string }>`
   background-color: white;
-  background: url(${(props) => props.bgphoto}) center center / cover;
+  background: url(${(props) => props.$bgPhoto}) center center / cover;
   height: 200px;
   font-size: 66px;
   cursor: pointer;
@@ -114,15 +120,28 @@ const BigOverview = styled.p`
 
 //Row 슬라이드시 너비 설정
 const rowVariants = {
-  hidden: {
-    x: window.outerWidth + 5,
-  },
+  entry: (isBack: boolean) => ({
+    x: isBack ? -window.outerWidth - 5 : window.outerWidth + 5,
+    opacity: 0,
+    transition: {
+      duration: 1,
+    },
+  }),
   visible: {
     x: 0,
+    opacity: 1,
+    transition: {
+      duration: 1,
+      delay: 0.5,
+    },
   },
-  exit: {
-    x: -window.outerWidth - 5,
-  },
+  exit: (isBack: boolean) => ({
+    x: isBack ? window.outerWidth + 5 : -window.outerWidth - 5,
+    opacity: 0,
+    transition: {
+      duration: 1,
+    },
+  }),
 };
 //박스 Row내 박스 hover시 동작설정
 const boxVariants = {
@@ -156,29 +175,40 @@ const offset = 6;
 function Home() {
   const navigate = useNavigate();
   const bigMovieMatch: PathMatch<string> | null = useMatch("/movies/:movieId");
-  console.log(bigMovieMatch);
+  // console.log(bigMovieMatch);
 
   // useQuery(키값지정, 데이터불러오는함수)
   const { data: nowMovie, isLoading } = useQuery<IGetMoviesResult>({ queryKey: ["movie", "nowPlaying"], queryFn: getMovies });
   const { data } = useQuery<IGeRatedMoviesResult>({ queryKey: ["movie", "top_rated"], queryFn: topRatedMovies });
-  console.log(data, isLoading);
+  // console.log(data, isLoading);
 
-  //빠르게 여러번 동작할때 슬라이더 겹치지 않게 설정
-  const [index, setIndex] = useState(0);
+  const [leaving, setLeaving] = useState(false); //빠르게 여러번 동작할때 슬라이더 겹치지 않게 설정
+  const [index, setIndex] = useState(0); //row의 key값으로 동작하여 새로운 row로 인식하도록 설정
+  const [isBack, setIsBack] = useState(false); // prev, next 버튼 구분
 
-  //슬라이더의 key값을 바꿔주기위해 생성
-  const [leaving, setLeaving] = useState(false);
-
-  const increaseIndex = () => {
+  const totalMovie = (nowMovie?.results.length as number) - 1; //배너로 사용한 영화1개는 제외
+  const maxIndex = Math.floor(totalMovie / offset) - 1;
+  const prevPlz = () => {
+    console.log("prev :", leaving, index);
     if (nowMovie) {
-      if (leaving) return; //true이면 아래코드 실행X  Row가 빠르게 클릭할때 모션이 겹쳐보이는 현상을 막음
+      if (leaving) return;
       toggleLeaving();
-      const totalMovies = nowMovie.results.length - 1; //메인배경으로 쓰인 영화1개는 뺀 값
-      const maxIndex = Math.floor(totalMovies / offset) - 1; //페이지가 0에서 시작하기 때문에 ;
-      setIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
+      setIsBack(true);
+      setIndex((prev) => (prev === 0 ? maxIndex : prev - 1));
     }
   };
-  const toggleLeaving = () => setLeaving((prev) => !prev);
+
+  const nextPlz = () => {
+    console.log("next:", leaving, index);
+    if (leaving) return; //슬라이드 처음 시작일 경우 false 값으로  아래 동작 실행
+    toggleLeaving();
+    setIsBack(false); //슬라이드 다음 버튼 모션동작 컨트롤
+    setIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
+  };
+
+  const toggleLeaving = () => {
+    setLeaving((prev) => !prev);
+  };
 
   //Row 슬라이드에 movie를 클릭하면 해당링크로 이동(상세페이지)
   const onBoxClicked = (movieId: number) => {
@@ -190,7 +220,6 @@ function Home() {
   };
   //Row 슬라이드에 movie 클릭이 상세페이지 정보 params으로 url내 movieId와 일치하는 nowMovie를 가져옴
   const clickedMovie = bigMovieMatch?.params.movieId && nowMovie?.results.find((movie) => String(movie.id) === bigMovieMatch.params.movieId);
-  console.log(clickedMovie);
   return (
     <Wrapper>
       {isLoading ? (
@@ -198,25 +227,28 @@ function Home() {
       ) : (
         <>
           <Banner
-            //motion.div 설정시 props bgphoto를 string으로 받을 수있는 type을 설정해둔 상태
-            onClick={increaseIndex}
-            bgphoto={makeImagePath(nowMovie?.results[0].backdrop_path || "")}
+            //motion.div 설정시 props $bgPhoto를 string으로 받을 수있는 type을 설정해둔 상태
+            $bgPhoto={makeImagePath(nowMovie?.results[0].backdrop_path || "")}
           >
             {/* 1. 베너 클릭할때 setIndex가 1씩 더해지면서 key 값을 인덱스를 늘려주어 새로운 Row생성효과  */}
             <Title>{nowMovie?.results[0].title}</Title>
             <OverView>{nowMovie?.results[0].overview}</OverView>
           </Banner>
           <Slider>
-            <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
+            <AnimatePresence initial={false} custom={isBack} onExitComplete={toggleLeaving}>
               {/* initial 이 false 일 경우 컴포넌트가 처음 마운트될때 오른쪽에서 들어오는 효과 없어짐 
                   3. Row에 설정된 exit모션이 끝났을때 toggleLeaving동작하며 index + 1효과 */}
+              <Btn onClick={prevPlz} key={index + 2}>
+                prev
+              </Btn>
               <Row
                 //2. 키값만 바꿔줘도 새로운 Row로 인식하여 슬라이드 동작
+                custom={isBack}
                 variants={rowVariants}
-                initial="hidden"
+                initial="entry"
                 animate="visible"
                 exit="exit"
-                transition={{ type: "tween", duration: 1 }}
+                transition={{ type: "tween" }}
                 key={index}
               >
                 {nowMovie?.results
@@ -231,7 +263,7 @@ function Home() {
                       initial="normal"
                       variants={boxVariants}
                       transition={{ type: "tween" }}
-                      bgphoto={makeImagePath(movie.backdrop_path, "w500")}
+                      $bgPhoto={makeImagePath(movie.backdrop_path, "w500")}
                       onClick={() => onBoxClicked(movie.id)}
                     >
                       <Info variants={infoVariants}>
@@ -241,7 +273,9 @@ function Home() {
                     </Box>
                   ))}
               </Row>
-              <Row></Row>
+              <Btn onClick={nextPlz} key={index + 1}>
+                next
+              </Btn>
             </AnimatePresence>
           </Slider>
 
