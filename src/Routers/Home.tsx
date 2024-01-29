@@ -6,6 +6,7 @@ import { makeImagePath } from "../utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { PathMatch, useMatch, useNavigate } from "react-router-dom";
+import useWindowDimensions from "../useWidowDimensions";
 
 const Wrapper = styled.div`
   background: black;
@@ -173,6 +174,9 @@ const infoVariants = {
 const offset = 6;
 
 function Home() {
+  //width값 추적
+  const width = useWindowDimensions();
+
   const navigate = useNavigate();
   const bigMovieMatch: PathMatch<string> | null = useMatch("/movies/:movieId");
   // console.log(bigMovieMatch);
