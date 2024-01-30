@@ -6,7 +6,6 @@ import { makeImagePath } from "../utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { PathMatch, useMatch, useNavigate } from "react-router-dom";
-import useWindowDimensions from "../useWidowDimensions";
 
 const Wrapper = styled.div`
   background: black;
@@ -38,19 +37,29 @@ const OverView = styled.p`
 const Slider = styled.div`
   position: relative;
   top: -100px;
-  display: flex;
 `;
 const Row = styled(motion.div)`
-  width: 100%;
+  width: 95%;
   display: grid;
   gap: 5px;
   grid-template-columns: repeat(6, 1fr);
-  /* position: absolute; */
+  position: absolute;
+  left: 2.5%;
 `;
 const Btn = styled.button`
+  height: 200px;
   border: none;
-  background: transparent;
   color: white;
+  position: absolute;
+  z-index: 2;
+  background: transparent;
+  display: block;
+  &:first-child {
+    left: 0;
+  }
+  &:last-child {
+    right: 0;
+  }
 `;
 const Box = styled(motion.div)<{ $bgPhoto: string }>`
   background-color: white;
@@ -174,13 +183,6 @@ const infoVariants = {
 const offset = 6;
 
 function Home() {
-  //width값 추적
-  const width = useWindowDimensions();
-
-  const navigate = useNavigate();
-  const bigMovieMatch: PathMatch<string> | null = useMatch("/movies/:movieId");
-  // console.log(bigMovieMatch);
-
   // useQuery(키값지정, 데이터불러오는함수)
   const { data: nowMovie, isLoading } = useQuery<IGetMoviesResult>({ queryKey: ["movie", "nowPlaying"], queryFn: getMovies });
   const { data } = useQuery<IGeRatedMoviesResult>({ queryKey: ["movie", "top_rated"], queryFn: topRatedMovies });
@@ -201,7 +203,6 @@ function Home() {
       setIndex((prev) => (prev === 0 ? maxIndex : prev - 1));
     }
   };
-
   const nextPlz = () => {
     console.log("next:", leaving, index);
     if (leaving) return; //슬라이드 처음 시작일 경우 false 값으로  아래 동작 실행
@@ -209,11 +210,14 @@ function Home() {
     setIsBack(false); //슬라이드 다음 버튼 모션동작 컨트롤
     setIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
   };
-
   const toggleLeaving = () => {
     setLeaving((prev) => !prev);
   };
 
+  //박스 클릭시 모달창 띄움
+  const navigate = useNavigate();
+  const bigMovieMatch: PathMatch<string> | null = useMatch("/movies/:movieId");
+  // console.log(bigMovieMatch);
   //Row 슬라이드에 movie를 클릭하면 해당링크로 이동(상세페이지)
   const onBoxClicked = (movieId: number) => {
     navigate(`/movies/${movieId}`);
