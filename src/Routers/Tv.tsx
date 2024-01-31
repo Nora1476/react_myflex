@@ -224,20 +224,17 @@ function Tv() {
   //박스 클릭시 모달창 띄움
   const navigate = useNavigate();
   const bigMovieMatch = useMatch("/tv/:tvId");
+  const { data: detail } = useQuery<IGetTvsDetail>({
+    //
+    queryKey: ["tv", bigMovieMatch?.params.tvId],
+    queryFn: () => tvShowDetail(bigMovieMatch?.params.tvId + ""),
+    enabled: !!bigMovieMatch,
+  });
+  console.log(detail);
 
   //Row 슬라이드에 movie를 클릭하면 해당링크로 이동(상세페이지)  및 영화 디테일정보 불러오기
-  const [tvDetail, setTvDetail] = useState<IGetTvsDetail>();
-  const fetchShowDetail = async (tvId: number) => {
-    try {
-      const detail = await tvShowDetail(tvId + "");
-      setTvDetail(detail);
-    } catch (error) {
-      console.error("Error fetching show detail:", error);
-    }
-  };
   const onBoxClicked = (tvId: number) => {
     navigate(`/tv/${tvId}`);
-    fetchShowDetail(tvId);
   };
   //오버레이부분 클릭시 홈링크로 이동 (상세페이지 모달끄는 용도)
   const onOverlayclick = () => {
@@ -245,7 +242,7 @@ function Tv() {
   };
   //Row 슬라이드에 movie 클릭이 상세페이지 정보 params으로 url내 tvId와 일치하는 nowMovie를 가져옴
   // const clickedMovie = bigMovieMatch?.params.tvId && airing?.results.find((tv) => String(tv.id) === bigMovieMatch.params.tvId);
-  // const clickedMovie = bigMovieMatch?.params.tvId && tvShowDetail(bigMovieMatch.params.tvId);
+  // const clickedMovie = bigMovieMatch?.params.tvId && fetchShowDetail(+bigMovieMatch.params.tvId);
 
   return (
     <Wrapper>
@@ -309,15 +306,13 @@ function Tv() {
                 <BigTv layoutId={bigMovieMatch.params.tvId}>
                   <>
                     <BigCover
-                      style={
-                        {
-                          // backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(tvDetail?.backdrop_path + "", "w500")})`,
-                        }
-                      }
+                      style={{
+                        backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(detail?.backdrop_path || detail?.poster_path + "", "w500")})`,
+                      }}
                     />
 
-                    {/* <BigTitle>{tvDetail?.name}</BigTitle> */}
-                    {/* <BigOverview>{tvDetail?.overview}</BigOverview> */}
+                    <BigTitle>{detail?.name}</BigTitle>
+                    <BigOverview>{detail?.overview}</BigOverview>
                   </>
                 </BigTv>
               </>
