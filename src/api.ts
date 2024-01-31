@@ -90,5 +90,5 @@ export function getTvShows() {
 //TV show Detail
 export async function tvShowDetail(tvId: string) {
   const json = await (await fetch(`${BASE_PATH}/tv/${tvId}?api_key=${API_KEY}`)).json();
-  console.log(json);
+  return json;
 }

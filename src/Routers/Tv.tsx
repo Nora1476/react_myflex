@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { IGetTvsResult, getTvShows, tvShowDetail } from "../api";
+import { IGetTvsDetail, IGetTvsResult, getTvShows, tvShowDetail } from "../api";
 import styled from "styled-components";
 import { makeImagePath } from "../utils";
 import { AnimatePresence, motion } from "framer-motion";
@@ -224,9 +224,20 @@ function Tv() {
   //박스 클릭시 모달창 띄움
   const navigate = useNavigate();
   const bigMovieMatch = useMatch("/tv/:tvId");
-  //Row 슬라이드에 movie를 클릭하면 해당링크로 이동(상세페이지)
+
+  //Row 슬라이드에 movie를 클릭하면 해당링크로 이동(상세페이지)  및 영화 디테일정보 불러오기
+  const [tvDetail, setTvDetail] = useState<IGetTvsDetail>();
+  const fetchShowDetail = async (tvId: number) => {
+    try {
+      const detail = await tvShowDetail(tvId + "");
+      setTvDetail(detail);
+    } catch (error) {
+      console.error("Error fetching show detail:", error);
+    }
+  };
   const onBoxClicked = (tvId: number) => {
     navigate(`/tv/${tvId}`);
+    fetchShowDetail(tvId);
   };
   //오버레이부분 클릭시 홈링크로 이동 (상세페이지 모달끄는 용도)
   const onOverlayclick = () => {
@@ -234,8 +245,7 @@ function Tv() {
   };
   //Row 슬라이드에 movie 클릭이 상세페이지 정보 params으로 url내 tvId와 일치하는 nowMovie를 가져옴
   // const clickedMovie = bigMovieMatch?.params.tvId && airing?.results.find((tv) => String(tv.id) === bigMovieMatch.params.tvId);
-  const clickedMovie = bigMovieMatch?.params.tvId && tvShowDetail(bigMovieMatch.params.tvId);
-  console.log(clickedMovie);
+  // const clickedMovie = bigMovieMatch?.params.tvId && tvShowDetail(bigMovieMatch.params.tvId);
 
   return (
     <Wrapper>
@@ -268,7 +278,7 @@ function Tv() {
                   .slice(offset * index, offset * index + offset)
                   .map((tv) => (
                     <Box
-                      //
+                      //슬라이드 박스
                       layoutId={tv.id + ""}
                       variants={boxVariants}
                       whileHover="hover"
@@ -295,20 +305,20 @@ function Tv() {
             {bigMovieMatch ? (
               <>
                 <Overlay onClick={onOverlayclick} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+                {/* 모달창 */}
                 <BigTv layoutId={bigMovieMatch.params.tvId}>
-                  {clickedMovie && (
-                    <>
-                      <BigCover
-                        style={
-                          {
-                            // backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(clickedMovie.backdrop_path, "w500")})`,
-                          }
+                  <>
+                    <BigCover
+                      style={
+                        {
+                          // backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(tvDetail?.backdrop_path + "", "w500")})`,
                         }
-                      />
-                      {/* <BigTitle>{clickedMovie}</BigTitle> */}
-                      {/* <BigOverview>{clickedMovie.overview}</BigOverview> */}
-                    </>
-                  )}
+                      }
+                    />
+
+                    {/* <BigTitle>{tvDetail?.name}</BigTitle> */}
+                    {/* <BigOverview>{tvDetail?.overview}</BigOverview> */}
+                  </>
                 </BigTv>
               </>
             ) : null}
