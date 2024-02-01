@@ -28,10 +28,6 @@ interface ITv {
   name: string;
   overview: string;
 }
-interface IGenres {
-  id: number;
-  name: string;
-}
 
 //받아오는 정화정보에 대한 타입지정(Home.tsx)
 export interface IGetMoviesResult {
@@ -51,6 +47,19 @@ export interface IGeRatedMoviesResult {
   total_pages: number;
   total_results: number;
 }
+export interface IGetMovieDetail {
+  adult: boolean;
+  backdrop_path: string;
+  genres: [{ id: number; name: string }];
+  homepage: string;
+  id: number;
+  title: string;
+  runtime: number;
+  tagline: string;
+  overview: string;
+  poster_path: string;
+  vote_average: number;
+}
 
 //받아오는 TV정보에 대한 타입지정(Home.tsx)
 export interface IGetTvsResult {
@@ -60,16 +69,17 @@ export interface IGetTvsResult {
   total_results: number;
 }
 export interface IGetTvsDetail {
+  adult: boolean;
+  backdrop_path: string;
+  genres: [{ id: number; name: string }];
+  homepage: string;
   id: number;
   name: string;
-  adult: boolean;
-  homepage: string;
   number_of_episodes: number;
   number_of_seasons: number;
   overview: string;
   poster_path: string;
-  backdrop_path: string;
-  genres: IGenres[];
+  type: string;
 }
 
 //fetch함수를 통해 영화 정보를 받아옴
@@ -82,13 +92,16 @@ export function getMovies() {
 export function topRatedMovies() {
   return fetch(`${BASE_PATH}/movie/top_rated?api_key=${API_KEY}`).then((response) => response.json());
 }
+//TV show Detail
+export function movieDetail(movieId: string) {
+  return fetch(`${BASE_PATH}/movie/${movieId}?api_key=${API_KEY}`).then((response) => response.json());
+}
 
 //현재상영 TV show
 export function getTvShows() {
   return fetch(`${BASE_PATH}/tv/airing_today?api_key=${API_KEY}`).then((response) => response.json());
 }
 //TV show Detail
-export async function tvShowDetail(tvId: string) {
-  const json = await (await fetch(`${BASE_PATH}/tv/${tvId}?api_key=${API_KEY}`)).json();
-  return json;
+export function tvShowDetail(tvId: string) {
+  return fetch(`${BASE_PATH}/tv/${tvId}?api_key=${API_KEY}`).then((response) => response.json());
 }

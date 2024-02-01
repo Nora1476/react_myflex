@@ -125,7 +125,7 @@ const BigCover = styled.div`
 const BigTitle = styled.h3`
   color: ${(props) => props.theme.white.lighter};
   padding: 20px;
-  font-size: 46px;
+  font-size: 38px;
   position: relative;
   top: -80px;
 `;
@@ -134,6 +134,24 @@ const BigOverview = styled.p`
   position: relative;
   top: -80px;
   color: ${(props) => props.theme.white.lighter};
+`;
+const BigDetail = styled.div`
+  padding: 20px;
+  font-size: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  div {
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+  }
+  h4 {
+    font-size: 18px;
+  }
+  ul {
+    display: flex;
+  }
 `;
 
 //Row 슬라이드시 너비 설정
@@ -223,12 +241,12 @@ function Tv() {
 
   //박스 클릭시 모달창 띄움
   const navigate = useNavigate();
-  const bigMovieMatch = useMatch("/tv/:tvId");
-  const { data: detail } = useQuery<IGetTvsDetail>({
+  const bigTvMatch = useMatch("/tv/:tvId");
+  const { data: detail, isLoading: detailLoading } = useQuery<IGetTvsDetail>({
     //
-    queryKey: ["tv", bigMovieMatch?.params.tvId],
-    queryFn: () => tvShowDetail(bigMovieMatch?.params.tvId + ""),
-    enabled: !!bigMovieMatch,
+    queryKey: ["tv", bigTvMatch?.params.tvId],
+    queryFn: () => tvShowDetail(bigTvMatch?.params.tvId + ""),
+    enabled: !!bigTvMatch,
   });
   console.log(detail);
 
@@ -241,8 +259,8 @@ function Tv() {
     navigate(`/tv`);
   };
   //Row 슬라이드에 movie 클릭이 상세페이지 정보 params으로 url내 tvId와 일치하는 nowMovie를 가져옴
-  // const clickedMovie = bigMovieMatch?.params.tvId && airing?.results.find((tv) => String(tv.id) === bigMovieMatch.params.tvId);
-  // const clickedMovie = bigMovieMatch?.params.tvId && fetchShowDetail(+bigMovieMatch.params.tvId);
+  // const clickedMovie = bigTvMatch?.params.tvId && airing?.results.find((tv) => String(tv.id) === bigTvMatch.params.tvId);
+  // const clickedMovie = bigTvMatch?.params.tvId && fetchShowDetail(+bigTvMatch.params.tvId);
 
   return (
     <Wrapper>
@@ -299,22 +317,40 @@ function Tv() {
 
           {/* modal */}
           <AnimatePresence>
-            {bigMovieMatch ? (
+            {bigTvMatch ? (
               <>
                 <Overlay onClick={onOverlayclick} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
                 {/* 모달창 */}
-                <BigTv layoutId={bigMovieMatch.params.tvId}>
-                  <>
-                    <BigCover
-                      style={{
-                        backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(detail?.backdrop_path || detail?.poster_path + "", "w500")})`,
-                      }}
-                    />
+                {detailLoading ? (
+                  <>Loading...</>
+                ) : (
+                  <BigTv layoutId={bigTvMatch.params.tvId}>
+                    <>
+                      <BigCover
+                        style={{
+                          backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(detail?.backdrop_path || detail?.poster_path + "", "w500")})`,
+                        }}
+                      />
 
-                    <BigTitle>{detail?.name}</BigTitle>
-                    <BigOverview>{detail?.overview}</BigOverview>
-                  </>
-                </BigTv>
+                      <BigTitle>{detail?.name}</BigTitle>
+                      <BigOverview>{detail?.overview}</BigOverview>
+                      <BigDetail>
+                        <div>
+                          <h4>Type : &nbsp; </h4>
+                          <span>{detail?.type}</span>
+                        </div>
+                        <div>
+                          <h4>Genres : &nbsp;</h4>
+                          <ul>
+                            {detail?.genres.map((i) => (
+                              <li>{i.name}&nbsp;/</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </BigDetail>
+                    </>
+                  </BigTv>
+                )}
               </>
             ) : null}
           </AnimatePresence>

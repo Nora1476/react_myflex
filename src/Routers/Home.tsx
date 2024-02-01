@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { IGeRatedMoviesResult, IGetMoviesResult, getMovies, topRatedMovies } from "../api";
+import { IGeRatedMoviesResult, IGetMovieDetail, IGetMoviesResult, getMovies, movieDetail, topRatedMovies } from "../api";
 import styled from "styled-components";
 import { makeImagePath } from "../utils";
 //AnimatePresence 컴포넌트가 render되거나 destroy 될 때 효과를 줄 수 있음
@@ -44,7 +44,9 @@ const Row = styled(motion.div)`
   gap: 5px;
   grid-template-columns: repeat(6, 1fr);
   position: absolute;
-  left: 2.5%;
+  right: 0;
+  left: 0;
+  margin: 0 auto;
 `;
 const Btn = styled.button`
   height: 200px;
@@ -107,6 +109,8 @@ const BigMovie = styled(motion.div)`
   border-radius: 15px;
   overflow: hidden;
   background-color: ${(props) => props.theme.black.lighter};
+  display: flex;
+  flex-direction: column;
 `;
 const BigCover = styled.div`
   width: 100%;
@@ -121,11 +125,33 @@ const BigTitle = styled.h3`
   position: relative;
   top: -80px;
 `;
-const BigOverview = styled.p`
+const BigOverview = styled.div`
   padding: 20px;
   position: relative;
   top: -80px;
   color: ${(props) => props.theme.white.lighter};
+  h4 {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+`;
+const BigDetail = styled.div`
+  padding: 20px;
+  font-size: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  div {
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+  }
+  h4 {
+    font-size: 18px;
+  }
+  ul {
+    display: flex;
+  }
 `;
 
 //Row 슬라이드시 너비 설정
@@ -181,11 +207,10 @@ const infoVariants = {
 };
 
 const offset = 6;
-
 function Home() {
   // useQuery(키값지정, 데이터불러오는함수)
   const { data: nowMovie, isLoading } = useQuery<IGetMoviesResult>({ queryKey: ["movie", "nowPlaying"], queryFn: getMovies });
-  const { data } = useQuery<IGeRatedMoviesResult>({ queryKey: ["movie", "top_rated"], queryFn: topRatedMovies });
+  const { data: topRated } = useQuery<IGeRatedMoviesResult>({ queryKey: ["movie", "top_rated"], queryFn: topRatedMovies });
   // console.log(data, isLoading);
 
   const [leaving, setLeaving] = useState(false); //빠르게 여러번 동작할때 슬라이더 겹치지 않게 설정
@@ -217,6 +242,14 @@ function Home() {
   //박스 클릭시 모달창 띄움
   const navigate = useNavigate();
   const bigMovieMatch: PathMatch<string> | null = useMatch("/movies/:movieId");
+  const { data: detail, isLoading: detailLoading } = useQuery<IGetMovieDetail>({
+    //
+    queryKey: ["movie", bigMovieMatch?.params.movieId],
+    queryFn: () => movieDetail(bigMovieMatch?.params.movieId + ""),
+    enabled: !!bigMovieMatch,
+  });
+  console.log(detail);
+
   // console.log(bigMovieMatch);
   //Row 슬라이드에 movie를 클릭하면 해당링크로 이동(상세페이지)
   const onBoxClicked = (movieId: number) => {
@@ -226,8 +259,14 @@ function Home() {
   const onOverlayclick = () => {
     navigate(`${process.env.PUBLIC_URL}/`);
   };
-  //Row 슬라이드에 movie 클릭이 상세페이지 정보 params으로 url내 movieId와 일치하는 nowMovie를 가져옴
-  const clickedMovie = bigMovieMatch?.params.movieId && nowMovie?.results.find((movie) => String(movie.id) === bigMovieMatch.params.movieId);
+
+  //overview 글자수 제한
+  const content = () => {
+    if (detail?.overview === "") return "no summary";
+    else if ((detail?.overview as string).length > 250) return detail?.overview.slice(0, 350) + "...";
+    else return detail?.overview;
+  };
+
   return (
     <Wrapper>
       {isLoading ? (
@@ -291,19 +330,36 @@ function Home() {
             {bigMovieMatch ? (
               <>
                 <Overlay onClick={onOverlayclick} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
-                <BigMovie layoutId={bigMovieMatch.params.movieId}>
-                  {clickedMovie && (
+                {detailLoading ? (
+                  <>Loading...</>
+                ) : (
+                  <BigMovie layoutId={bigMovieMatch.params.movieId}>
                     <>
                       <BigCover
                         style={{
-                          backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(clickedMovie.backdrop_path, "w500")})`,
+                          backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(detail?.backdrop_path || detail?.poster_path + "", "w500")})`,
                         }}
                       />
-                      <BigTitle>{clickedMovie.title}</BigTitle>
-                      <BigOverview>{clickedMovie.overview}</BigOverview>
+                      <BigTitle>
+                        {detail?.title}({detail?.vote_average?.toFixed(1)})
+                      </BigTitle>
+                      <BigOverview>
+                        <h4> "{detail?.tagline}" </h4>
+                        <p>{content()} </p>
+                      </BigOverview>
+                      <BigDetail>
+                        <div>
+                          <h4>Genres : &nbsp;</h4>
+                          <ul>
+                            {detail?.genres.map((i) => (
+                              <li>{i.name}&nbsp;/</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </BigDetail>
                     </>
-                  )}
-                </BigMovie>
+                  </BigMovie>
+                )}
               </>
             ) : null}
           </AnimatePresence>
