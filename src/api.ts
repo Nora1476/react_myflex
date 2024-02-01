@@ -92,6 +92,10 @@ export function getMovies() {
 export function topRatedMovies() {
   return fetch(`${BASE_PATH}/movie/top_rated?api_key=${API_KEY}`).then((response) => response.json());
 }
+//상위 랭크 top_rated
+export function upcomingMovies() {
+  return fetch(`${BASE_PATH}/movie/upcoming?api_key=${API_KEY}`).then((response) => response.json());
+}
 //TV show Detail
 export function movieDetail(movieId: string) {
   return fetch(`${BASE_PATH}/movie/${movieId}?api_key=${API_KEY}`).then((response) => response.json());
@@ -100,6 +104,12 @@ export function movieDetail(movieId: string) {
 //현재상영 TV show
 export function getTvShows() {
   return fetch(`${BASE_PATH}/tv/airing_today?api_key=${API_KEY}`).then((response) => response.json());
+}
+export function getTvPopular() {
+  return fetch(`${BASE_PATH}/tv/popular?api_key=${API_KEY}`).then((response) => response.json());
+}
+export function getTvOnair() {
+  return fetch(`${BASE_PATH}/tv/top_rated?api_key=${API_KEY}`).then((response) => response.json());
 }
 //TV show Detail
 export function tvShowDetail(tvId: string) {

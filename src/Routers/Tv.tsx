@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { IGetTvsDetail, IGetTvsResult, getTvShows, tvShowDetail } from "../api";
+import { IGetTvsDetail, IGetTvsResult, getTvOnair, getTvPopular, getTvShows, tvShowDetail } from "../api";
 import styled from "styled-components";
 import { makeImagePath } from "../utils";
 import { AnimatePresence, motion } from "framer-motion";
@@ -38,14 +38,23 @@ const OverView = styled.p`
 const Slider = styled.div`
   position: relative;
   top: -100px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+`;
+const Slider_row = styled.div`
+  display: flex;
+  position: relative;
 `;
 const Row = styled(motion.div)`
   width: 95%;
   display: grid;
   gap: 5px;
   grid-template-columns: repeat(6, 1fr);
-  position: absolute;
-  left: 2.5%;
+  margin: 0 auto;
+  /* position: absolute;
+  left: 0;
+  right: 0; */
 `;
 const Btn = styled.button`
   height: 200px;
@@ -115,6 +124,8 @@ const BigTv = styled(motion.div)`
   border-radius: 15px;
   overflow: hidden;
   background-color: ${(props) => props.theme.black.lighter};
+  display: flex;
+  flex-direction: column;
 `;
 const BigCover = styled.div`
   width: 100%;
@@ -148,9 +159,13 @@ const BigDetail = styled.div`
   }
   h4 {
     font-size: 18px;
+    white-space: nowrap;
   }
   ul {
     display: flex;
+    li {
+      white-space: nowrap;
+    }
   }
 `;
 
@@ -210,6 +225,9 @@ const offset = 6;
 function Tv() {
   //Tv현재 방영중인 데이터 받아오는 query 함수
   const { data: airing, isLoading } = useQuery<IGetTvsResult>({ queryKey: ["tv", "airing_today"], queryFn: getTvShows });
+  const { data: popular, isLoading: popularLoading } = useQuery<IGetTvsResult>({ queryKey: ["tv", "popular"], queryFn: getTvPopular });
+  const { data: onair, isLoading: onairLoading } = useQuery<IGetTvsResult>({ queryKey: ["tv", "on_the_air"], queryFn: getTvOnair });
+  console.log(popular);
 
   //빠르게 여러번 동작할때 슬라이더 겹치지 않게 설정
   const [leaving, setLeaving] = useState(false);
@@ -243,7 +261,6 @@ function Tv() {
   const navigate = useNavigate();
   const bigTvMatch = useMatch("/tv/:tvId");
   const { data: detail, isLoading: detailLoading } = useQuery<IGetTvsDetail>({
-    //
     queryKey: ["tv", bigTvMatch?.params.tvId],
     queryFn: () => tvShowDetail(bigTvMatch?.params.tvId + ""),
     enabled: !!bigTvMatch,
@@ -251,7 +268,7 @@ function Tv() {
   console.log(detail);
 
   //Row 슬라이드에 movie를 클릭하면 해당링크로 이동(상세페이지)  및 영화 디테일정보 불러오기
-  const onBoxClicked = (tvId: number) => {
+  const onBoxClicked = (tvId: string) => {
     navigate(`/tv/${tvId}`);
   };
   //오버레이부분 클릭시 홈링크로 이동 (상세페이지 모달끄는 용도)
@@ -264,7 +281,7 @@ function Tv() {
 
   return (
     <Wrapper>
-      {isLoading ? (
+      {isLoading && popularLoading && onairLoading ? (
         <Loader>Loading...</Loader>
       ) : (
         <>
@@ -274,45 +291,101 @@ function Tv() {
           </Banner>
 
           <Slider>
-            <AnimatePresence initial={false} custom={isBack} onExitComplete={toggleLeaving}>
-              <Btn onClick={prevPlz} key={index + 2}>
-                prev
-              </Btn>
-              <Row
-                //
-                custom={isBack}
-                variants={rowVariants}
-                initial="entry"
-                animate="visible"
-                exit="exit"
-                transition={{ type: "tween" }}
-                key={index}
-              >
-                {airing?.results
+            <Slider_row>
+              <AnimatePresence initial={false} custom={isBack} onExitComplete={toggleLeaving}>
+                <Btn onClick={prevPlz} key={index + 2}>
+                  prev
+                </Btn>
+                <Row
+                  //
+                  custom={isBack}
+                  variants={rowVariants}
+                  initial="entry"
+                  animate="visible"
+                  exit="exit"
+                  transition={{ type: "tween" }}
+                  key={index}
+                >
+                  {airing?.results
+                    .slice(1)
+                    .slice(offset * index, offset * index + offset)
+                    .map((tv) => (
+                      <Box
+                        //슬라이드 박스
+                        layoutId={tv.id + ""}
+                        variants={boxVariants}
+                        whileHover="hover"
+                        initial="normal"
+                        transition={{ type: "tween" }}
+                        key={tv.id}
+                        onClick={() => onBoxClicked(tv.id + "")}
+                      >
+                        <img src={makeImagePath(tv.backdrop_path || tv.poster_path, "w500")} alt="img" />
+                        <Info variants={infoVariants}>
+                          <h4>{tv.name}</h4>
+                        </Info>
+                      </Box>
+                    ))}
+                </Row>
+                <Btn onClick={nextPlz} key={index + 1}>
+                  next
+                </Btn>
+              </AnimatePresence>
+            </Slider_row>
+
+            <Slider_row>
+              <Btn>prev</Btn>
+              <Row>
+                {popular?.results
                   .slice(1)
                   .slice(offset * index, offset * index + offset)
                   .map((tv) => (
                     <Box
-                      //슬라이드 박스
-                      layoutId={tv.id + ""}
-                      variants={boxVariants}
+                      //
+                      key={tv.id}
                       whileHover="hover"
                       initial="normal"
+                      variants={boxVariants}
                       transition={{ type: "tween" }}
-                      key={tv.id}
-                      onClick={() => onBoxClicked(tv.id)}
+                      onClick={() => onBoxClicked(tv.id + "")}
                     >
                       <img src={makeImagePath(tv.backdrop_path || tv.poster_path, "w500")} alt="img" />
                       <Info variants={infoVariants}>
+                        {/* 부모로부터 hover */}
                         <h4>{tv.name}</h4>
                       </Info>
                     </Box>
                   ))}
               </Row>
-              <Btn onClick={nextPlz} key={index + 1}>
-                next
-              </Btn>
-            </AnimatePresence>
+              <Btn>next</Btn>
+            </Slider_row>
+
+            <Slider_row>
+              <Btn>prev</Btn>
+              <Row>
+                {onair?.results
+                  .slice(1)
+                  .slice(offset * index, offset * index + offset)
+                  .map((tv) => (
+                    <Box
+                      //
+                      key={tv.id}
+                      whileHover="hover"
+                      initial="normal"
+                      variants={boxVariants}
+                      transition={{ type: "tween" }}
+                      onClick={() => onBoxClicked(tv.id + "")}
+                    >
+                      <img src={makeImagePath(tv.backdrop_path || tv.poster_path, "w500")} alt="img" />
+                      <Info variants={infoVariants}>
+                        {/* 부모로부터 hover */}
+                        <h4>{tv.name}</h4>
+                      </Info>
+                    </Box>
+                  ))}
+              </Row>
+              <Btn>next</Btn>
+            </Slider_row>
           </Slider>
 
           {/* modal */}
@@ -324,7 +397,7 @@ function Tv() {
                 {detailLoading ? (
                   <>Loading...</>
                 ) : (
-                  <BigTv layoutId={bigTvMatch.params.tvId}>
+                  <BigTv>
                     <>
                       <BigCover
                         style={{

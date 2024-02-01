@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { IGeRatedMoviesResult, IGetMovieDetail, IGetMoviesResult, getMovies, movieDetail, topRatedMovies } from "../api";
+import { IGeRatedMoviesResult, IGetMovieDetail, IGetMoviesResult, getMovies, movieDetail, upcomingMovies, topRatedMovies } from "../api";
 import styled from "styled-components";
 import { makeImagePath } from "../utils";
 //AnimatePresence 컴포넌트가 render되거나 destroy 될 때 효과를 줄 수 있음
@@ -37,16 +37,23 @@ const OverView = styled.p`
 const Slider = styled.div`
   position: relative;
   top: -100px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+`;
+const Slider_row = styled.div`
+  display: flex;
+  position: relative;
 `;
 const Row = styled(motion.div)`
   width: 95%;
   display: grid;
   gap: 5px;
   grid-template-columns: repeat(6, 1fr);
-  position: absolute;
-  right: 0;
-  left: 0;
   margin: 0 auto;
+  /* position: absolute;
+  right: 0;
+  left: 0; */
 `;
 const Btn = styled.button`
   height: 200px;
@@ -121,7 +128,7 @@ const BigCover = styled.div`
 const BigTitle = styled.h3`
   color: ${(props) => props.theme.white.lighter};
   padding: 20px;
-  font-size: 46px;
+  font-size: 38px;
   position: relative;
   top: -80px;
 `;
@@ -209,9 +216,9 @@ const infoVariants = {
 const offset = 6;
 function Home() {
   // useQuery(키값지정, 데이터불러오는함수)
-  const { data: nowMovie, isLoading } = useQuery<IGetMoviesResult>({ queryKey: ["movie", "nowPlaying"], queryFn: getMovies });
-  const { data: topRated } = useQuery<IGeRatedMoviesResult>({ queryKey: ["movie", "top_rated"], queryFn: topRatedMovies });
-  // console.log(data, isLoading);
+  const { data: nowMovie, isLoading: nowLoading } = useQuery<IGetMoviesResult>({ queryKey: ["movie", "nowPlaying"], queryFn: getMovies });
+  const { data: topRated, isLoading: topLoading } = useQuery<IGeRatedMoviesResult>({ queryKey: ["movie", "top_rated"], queryFn: topRatedMovies });
+  const { data: upcoming, isLoading: upcomingLoading } = useQuery<IGeRatedMoviesResult>({ queryKey: ["movie", "popular"], queryFn: upcomingMovies });
 
   const [leaving, setLeaving] = useState(false); //빠르게 여러번 동작할때 슬라이더 겹치지 않게 설정
   const [index, setIndex] = useState(0); //row의 key값으로 동작하여 새로운 row로 인식하도록 설정
@@ -252,7 +259,7 @@ function Home() {
 
   // console.log(bigMovieMatch);
   //Row 슬라이드에 movie를 클릭하면 해당링크로 이동(상세페이지)
-  const onBoxClicked = (movieId: number) => {
+  const onBoxClicked = (movieId: string) => {
     navigate(`/movies/${movieId}`);
   };
   //오버레이부분 클릭시 홈링크로 이동 (상세페이지 모달끄는 용도)
@@ -269,7 +276,7 @@ function Home() {
 
   return (
     <Wrapper>
-      {isLoading ? (
+      {nowLoading && topLoading && upcomingLoading ? (
         <Loader>Loading...</Loader>
       ) : (
         <>
@@ -281,38 +288,70 @@ function Home() {
             <Title>{nowMovie?.results[0].title}</Title>
             <OverView>{nowMovie?.results[0].overview}</OverView>
           </Banner>
+
           <Slider>
-            <AnimatePresence initial={false} custom={isBack} onExitComplete={toggleLeaving}>
-              {/* initial 이 false 일 경우 컴포넌트가 처음 마운트될때 오른쪽에서 들어오는 효과 없어짐 
+            <Slider_row>
+              <AnimatePresence initial={false} custom={isBack} onExitComplete={toggleLeaving}>
+                {/* initial 이 false 일 경우 컴포넌트가 처음 마운트될때 오른쪽에서 들어오는 효과 없어짐 
                   3. Row에 설정된 exit모션이 끝났을때 toggleLeaving동작하며 index + 1효과 */}
-              <Btn onClick={prevPlz} key={index + 2}>
-                prev
-              </Btn>
-              <Row
-                //2. 키값만 바꿔줘도 새로운 Row로 인식하여 슬라이드 동작
-                custom={isBack}
-                variants={rowVariants}
-                initial="entry"
-                animate="visible"
-                exit="exit"
-                transition={{ type: "tween" }}
-                key={index}
-              >
-                {nowMovie?.results
+                <Btn onClick={prevPlz} key={index + 2}>
+                  prev
+                </Btn>
+                <Row
+                  //2. 키값만 바꿔줘도 새로운 Row로 인식하여 슬라이드 동작
+                  custom={isBack}
+                  variants={rowVariants}
+                  initial="entry"
+                  animate="visible"
+                  exit="exit"
+                  transition={{ type: "tween" }}
+                  key={index}
+                >
+                  {nowMovie?.results
+                    .slice(1)
+                    .slice(offset * index, offset * index + offset)
+                    .map((movie) => (
+                      <Box
+                        //
+                        key={movie.id}
+                        whileHover="hover"
+                        initial="normal"
+                        variants={boxVariants}
+                        transition={{ type: "tween" }}
+                        $bgPhoto={makeImagePath(movie.backdrop_path, "w500")}
+                        onClick={() => onBoxClicked(movie.id + "")}
+                      >
+                        <Info variants={infoVariants}>
+                          {/* 부모로부터 hover */}
+                          <h4>{movie.title}</h4>
+                        </Info>
+                      </Box>
+                    ))}
+                </Row>
+                <Btn onClick={nextPlz} key={index + 1}>
+                  next
+                </Btn>
+              </AnimatePresence>
+            </Slider_row>
+
+            <Slider_row>
+              <Btn>prev</Btn>
+              <Row>
+                {upcoming?.results
                   .slice(1)
                   .slice(offset * index, offset * index + offset)
                   .map((movie) => (
                     <Box
                       //
-                      layoutId={movie.id + ""}
                       key={movie.id}
                       whileHover="hover"
                       initial="normal"
                       variants={boxVariants}
                       transition={{ type: "tween" }}
                       $bgPhoto={makeImagePath(movie.backdrop_path, "w500")}
-                      onClick={() => onBoxClicked(movie.id)}
+                      onClick={() => onBoxClicked(movie.id + "")}
                     >
+                      {" "}
                       <Info variants={infoVariants}>
                         {/* 부모로부터 hover */}
                         <h4>{movie.title}</h4>
@@ -320,10 +359,36 @@ function Home() {
                     </Box>
                   ))}
               </Row>
-              <Btn onClick={nextPlz} key={index + 1}>
-                next
-              </Btn>
-            </AnimatePresence>
+              <Btn>next</Btn>
+            </Slider_row>
+
+            <Slider_row>
+              <Btn>prev</Btn>
+              <Row>
+                {topRated?.results
+                  .slice(1)
+                  .slice(offset * index, offset * index + offset)
+                  .map((movie) => (
+                    <Box
+                      //
+                      key={movie.id}
+                      whileHover="hover"
+                      initial="normal"
+                      variants={boxVariants}
+                      transition={{ type: "tween" }}
+                      $bgPhoto={makeImagePath(movie.backdrop_path, "w500")}
+                      onClick={() => onBoxClicked(movie.id + "")}
+                    >
+                      {" "}
+                      <Info variants={infoVariants}>
+                        {/* 부모로부터 hover */}
+                        <h4>{movie.title}</h4>
+                      </Info>
+                    </Box>
+                  ))}
+              </Row>
+              <Btn>next</Btn>
+            </Slider_row>
           </Slider>
 
           <AnimatePresence>
@@ -333,7 +398,7 @@ function Home() {
                 {detailLoading ? (
                   <>Loading...</>
                 ) : (
-                  <BigMovie layoutId={bigMovieMatch.params.movieId}>
+                  <BigMovie>
                     <>
                       <BigCover
                         style={{
