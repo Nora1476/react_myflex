@@ -274,6 +274,8 @@ function Home() {
     else return detail?.overview;
   };
 
+  const NEXFLIX_LOGO_URL = "https://assets.brand.microsites.netflix.io/assets/2800a67c-4252-11ec-a9ce-066b49664af6_cm_800w.jpg?v=4";
+
   return (
     <Wrapper>
       {nowLoading && topLoading && upcomingLoading ? (
@@ -318,7 +320,7 @@ function Home() {
                         initial="normal"
                         variants={boxVariants}
                         transition={{ type: "tween" }}
-                        $bgPhoto={makeImagePath(movie.backdrop_path, "w500")}
+                        $bgPhoto={movie.backdrop_path ? makeImagePath(movie.backdrop_path || movie.poster_path, "w500") : NEXFLIX_LOGO_URL}
                         onClick={() => onBoxClicked(movie.id + "")}
                       >
                         <Info variants={infoVariants}>
@@ -348,7 +350,7 @@ function Home() {
                       initial="normal"
                       variants={boxVariants}
                       transition={{ type: "tween" }}
-                      $bgPhoto={makeImagePath(movie.backdrop_path, "w500")}
+                      $bgPhoto={movie.backdrop_path ? makeImagePath(movie.backdrop_path || movie.poster_path, "w500") : NEXFLIX_LOGO_URL}
                       onClick={() => onBoxClicked(movie.id + "")}
                     >
                       {" "}
@@ -376,7 +378,7 @@ function Home() {
                       initial="normal"
                       variants={boxVariants}
                       transition={{ type: "tween" }}
-                      $bgPhoto={makeImagePath(movie.backdrop_path, "w500")}
+                      $bgPhoto={movie.backdrop_path ? makeImagePath(movie.backdrop_path || movie.poster_path, "w500") : NEXFLIX_LOGO_URL}
                       onClick={() => onBoxClicked(movie.id + "")}
                     >
                       {" "}
@@ -402,7 +404,9 @@ function Home() {
                     <>
                       <BigCover
                         style={{
-                          backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(detail?.backdrop_path || detail?.poster_path + "", "w500")})`,
+                          backgroundImage: `linear-gradient(to top, black, transparent), url(${
+                            detail?.backdrop_path ? makeImagePath(detail.backdrop_path || detail.poster_path, "w500") : NEXFLIX_LOGO_URL
+                          })`,
                         }}
                       />
                       <BigTitle>

@@ -227,15 +227,17 @@ function Tv() {
   const { data: airing, isLoading } = useQuery<IGetTvsResult>({ queryKey: ["tv", "airing_today"], queryFn: getTvShows });
   const { data: popular, isLoading: popularLoading } = useQuery<IGetTvsResult>({ queryKey: ["tv", "popular"], queryFn: getTvPopular });
   const { data: onair, isLoading: onairLoading } = useQuery<IGetTvsResult>({ queryKey: ["tv", "on_the_air"], queryFn: getTvOnair });
-  console.log(popular);
 
   //빠르게 여러번 동작할때 슬라이더 겹치지 않게 설정
   const [leaving, setLeaving] = useState(false);
-  const [index, setIndex] = useState(0); //row의 key값으로 동작하여 새로운 row로 인식하도록 설정
   const [isBack, setIsBack] = useState(false); // prev, next 버튼 구분
+  const [index, setIndex] = useState(0); //row의 key값으로 동작하여 새로운 row로 인식하도록 설정
+  const [indexRow2, setIndexRow2] = useState(0); //row의 key값으로 동작하여 새로운 row로 인식하도록 설정
+  const [indexRow3, setIndexRow3] = useState(0); //row의 key값으로 동작하여 새로운 row로 인식하도록 설정
 
   const totalMovie = (airing?.results.length as number) - 1; //배너로 사용한 영화1개는 제외
   const maxIndex = Math.floor(totalMovie / offset) - 1;
+
   const prevPlz = () => {
     console.log("클릭", leaving, index);
     if (airing) {
@@ -265,8 +267,10 @@ function Tv() {
     queryFn: () => tvShowDetail(bigTvMatch?.params.tvId + ""),
     enabled: !!bigTvMatch,
   });
-  console.log(detail);
+  // console.log(detail);
 
+  //Row 슬라이드에 movie 클릭이 상세페이지 정보 params으로 url내 tvId와 일치하는 nowMovie를 가져옴
+  // const clickedMovie = bigTvMatch?.params.tvId && airing?.results.find((tv) => String(tv.id) === bigTvMatch.params.tvId);
   //Row 슬라이드에 movie를 클릭하면 해당링크로 이동(상세페이지)  및 영화 디테일정보 불러오기
   const onBoxClicked = (tvId: string) => {
     navigate(`/tv/${tvId}`);
@@ -275,9 +279,8 @@ function Tv() {
   const onOverlayclick = () => {
     navigate(`/tv`);
   };
-  //Row 슬라이드에 movie 클릭이 상세페이지 정보 params으로 url내 tvId와 일치하는 nowMovie를 가져옴
-  // const clickedMovie = bigTvMatch?.params.tvId && airing?.results.find((tv) => String(tv.id) === bigTvMatch.params.tvId);
-  // const clickedMovie = bigTvMatch?.params.tvId && fetchShowDetail(+bigTvMatch.params.tvId);
+
+  const NEXFLIX_LOGO_URL = "https://assets.brand.microsites.netflix.io/assets/2800a67c-4252-11ec-a9ce-066b49664af6_cm_800w.jpg?v=4";
 
   return (
     <Wrapper>
@@ -312,7 +315,6 @@ function Tv() {
                     .map((tv) => (
                       <Box
                         //슬라이드 박스
-                        layoutId={tv.id + ""}
                         variants={boxVariants}
                         whileHover="hover"
                         initial="normal"
@@ -320,7 +322,7 @@ function Tv() {
                         key={tv.id}
                         onClick={() => onBoxClicked(tv.id + "")}
                       >
-                        <img src={makeImagePath(tv.backdrop_path || tv.poster_path, "w500")} alt="img" />
+                        <img src={tv.backdrop_path ? makeImagePath(tv.backdrop_path || tv.poster_path, "w500") : NEXFLIX_LOGO_URL} alt="img" />
                         <Info variants={infoVariants}>
                           <h4>{tv.name}</h4>
                         </Info>
@@ -335,7 +337,7 @@ function Tv() {
 
             <Slider_row>
               <Btn>prev</Btn>
-              <Row>
+              <Row key={indexRow2}>
                 {popular?.results
                   .slice(1)
                   .slice(offset * index, offset * index + offset)
@@ -349,7 +351,7 @@ function Tv() {
                       transition={{ type: "tween" }}
                       onClick={() => onBoxClicked(tv.id + "")}
                     >
-                      <img src={makeImagePath(tv.backdrop_path || tv.poster_path, "w500")} alt="img" />
+                      <img src={tv.backdrop_path ? makeImagePath(tv.backdrop_path || tv.poster_path, "w500") : NEXFLIX_LOGO_URL} alt="img" />
                       <Info variants={infoVariants}>
                         {/* 부모로부터 hover */}
                         <h4>{tv.name}</h4>
@@ -376,7 +378,7 @@ function Tv() {
                       transition={{ type: "tween" }}
                       onClick={() => onBoxClicked(tv.id + "")}
                     >
-                      <img src={makeImagePath(tv.backdrop_path || tv.poster_path, "w500")} alt="img" />
+                      <img src={tv.backdrop_path ? makeImagePath(tv.backdrop_path || tv.poster_path, "w500") : NEXFLIX_LOGO_URL} alt="img" />
                       <Info variants={infoVariants}>
                         {/* 부모로부터 hover */}
                         <h4>{tv.name}</h4>
@@ -401,7 +403,9 @@ function Tv() {
                     <>
                       <BigCover
                         style={{
-                          backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(detail?.backdrop_path || detail?.poster_path + "", "w500")})`,
+                          backgroundImage: `linear-gradient(to top, black, transparent), url(${
+                            detail?.backdrop_path ? makeImagePath(detail.backdrop_path || detail.poster_path, "w500") : NEXFLIX_LOGO_URL
+                          })`,
                         }}
                       />
 
