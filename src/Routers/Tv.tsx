@@ -56,7 +56,7 @@ const Row = styled(motion.div)`
   left: 0;
   right: 0; */
 `;
-const Btn = styled.button`
+const Btn = styled(motion.button)`
   height: 200px;
   border: none;
   color: white;
@@ -238,8 +238,7 @@ function Tv() {
   const totalMovie = (airing?.results.length as number) - 1; //배너로 사용한 영화1개는 제외
   const maxIndex = Math.floor(totalMovie / offset) - 1;
 
-  const prevPlz = () => {
-    console.log("클릭", leaving, index);
+  const prevRow1 = () => {
     if (airing) {
       if (leaving) return;
       toggleLeaving();
@@ -247,13 +246,44 @@ function Tv() {
       setIndex((prev) => (prev === 0 ? maxIndex : prev - 1));
     }
   };
-  const nextPlz = () => {
+  const prevRow2 = () => {
     console.log("클릭", leaving, index);
+    if (popular) {
+      if (leaving) return;
+      toggleLeaving();
+      setIsBack(true);
+      setIndexRow2((prev) => (prev === 0 ? maxIndex : prev - 1));
+    }
+  };
+  const prevRow3 = () => {
+    console.log("클릭", leaving, index);
+    if (onair) {
+      if (leaving) return;
+      toggleLeaving();
+      setIsBack(true);
+      setIndexRow3((prev) => (prev === 0 ? maxIndex : prev - 1));
+    }
+  };
+  const nextRow1 = () => {
     if (leaving) return; //슬라이드 처음 시작일 경우 false 값으로  아래 동작 실행
     toggleLeaving();
     setIsBack(false); //슬라이드 다음 버튼 모션동작 컨트롤
     setIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
   };
+  const nextRow2 = () => {
+    if (leaving) return; //슬라이드 처음 시작일 경우 false 값으로  아래 동작 실행
+    toggleLeaving();
+    setIsBack(false); //슬라이드 다음 버튼 모션동작 컨트롤
+    setIndexRow2((prev) => (prev === maxIndex ? 0 : prev + 1));
+  };
+  const nextRow3 = () => {
+    console.log("클릭", leaving, index);
+    if (leaving) return; //슬라이드 처음 시작일 경우 false 값으로  아래 동작 실행
+    toggleLeaving();
+    setIsBack(false); //슬라이드 다음 버튼 모션동작 컨트롤
+    setIndexRow3((prev) => (prev === maxIndex ? 0 : prev + 1));
+  };
+
   const toggleLeaving = () => {
     console.log(leaving);
     setLeaving((prev) => !prev);
@@ -295,10 +325,8 @@ function Tv() {
 
           <Slider>
             <Slider_row>
+              <Btn onClick={prevRow1}>prev</Btn>
               <AnimatePresence initial={false} custom={isBack} onExitComplete={toggleLeaving}>
-                <Btn onClick={prevPlz} key={index + 2}>
-                  prev
-                </Btn>
                 <Row
                   //
                   custom={isBack}
@@ -329,64 +357,84 @@ function Tv() {
                       </Box>
                     ))}
                 </Row>
-                <Btn onClick={nextPlz} key={index + 1}>
-                  next
-                </Btn>
               </AnimatePresence>
+              <Btn onClick={nextRow1}>next</Btn>
             </Slider_row>
 
             <Slider_row>
-              <Btn>prev</Btn>
-              <Row key={indexRow2}>
-                {popular?.results
-                  .slice(1)
-                  .slice(offset * index, offset * index + offset)
-                  .map((tv) => (
-                    <Box
-                      //
-                      key={tv.id}
-                      whileHover="hover"
-                      initial="normal"
-                      variants={boxVariants}
-                      transition={{ type: "tween" }}
-                      onClick={() => onBoxClicked(tv.id + "")}
-                    >
-                      <img src={tv.backdrop_path ? makeImagePath(tv.backdrop_path || tv.poster_path, "w500") : NEXFLIX_LOGO_URL} alt="img" />
-                      <Info variants={infoVariants}>
-                        {/* 부모로부터 hover */}
-                        <h4>{tv.name}</h4>
-                      </Info>
-                    </Box>
-                  ))}
-              </Row>
-              <Btn>next</Btn>
+              <Btn onClick={prevRow2}>prev</Btn>
+              <AnimatePresence initial={false} custom={isBack} onExitComplete={toggleLeaving}>
+                <Row
+                  //
+                  custom={isBack}
+                  variants={rowVariants}
+                  initial="entry"
+                  animate="visible"
+                  exit="exit"
+                  transition={{ type: "tween" }}
+                  key={indexRow2}
+                >
+                  {popular?.results
+                    .slice(1)
+                    .slice(offset * indexRow2, offset * indexRow2 + offset)
+                    .map((tv) => (
+                      <Box
+                        //
+                        key={tv.id}
+                        whileHover="hover"
+                        initial="normal"
+                        variants={boxVariants}
+                        transition={{ type: "tween" }}
+                        onClick={() => onBoxClicked(tv.id + "")}
+                      >
+                        <img src={tv.backdrop_path ? makeImagePath(tv.backdrop_path || tv.poster_path, "w500") : NEXFLIX_LOGO_URL} alt="img" />
+                        <Info variants={infoVariants}>
+                          {/* 부모로부터 hover */}
+                          <h4>{tv.name}</h4>
+                        </Info>
+                      </Box>
+                    ))}
+                </Row>
+              </AnimatePresence>
+              <Btn onClick={nextRow2}>next</Btn>
             </Slider_row>
 
             <Slider_row>
-              <Btn>prev</Btn>
-              <Row>
-                {onair?.results
-                  .slice(1)
-                  .slice(offset * index, offset * index + offset)
-                  .map((tv) => (
-                    <Box
-                      //
-                      key={tv.id}
-                      whileHover="hover"
-                      initial="normal"
-                      variants={boxVariants}
-                      transition={{ type: "tween" }}
-                      onClick={() => onBoxClicked(tv.id + "")}
-                    >
-                      <img src={tv.backdrop_path ? makeImagePath(tv.backdrop_path || tv.poster_path, "w500") : NEXFLIX_LOGO_URL} alt="img" />
-                      <Info variants={infoVariants}>
-                        {/* 부모로부터 hover */}
-                        <h4>{tv.name}</h4>
-                      </Info>
-                    </Box>
-                  ))}
-              </Row>
-              <Btn>next</Btn>
+              <Btn onClick={prevRow3}>prev</Btn>
+              <AnimatePresence initial={false} custom={isBack} onExitComplete={toggleLeaving}>
+                <Row
+                  //
+                  custom={isBack}
+                  variants={rowVariants}
+                  initial="entry"
+                  animate="visible"
+                  exit="exit"
+                  transition={{ type: "tween" }}
+                  key={indexRow3}
+                >
+                  {onair?.results
+                    .slice(1)
+                    .slice(offset * indexRow3, offset * indexRow3 + offset)
+                    .map((tv) => (
+                      <Box
+                        //
+                        key={tv.id}
+                        whileHover="hover"
+                        initial="normal"
+                        variants={boxVariants}
+                        transition={{ type: "tween" }}
+                        onClick={() => onBoxClicked(tv.id + "")}
+                      >
+                        <img src={tv.backdrop_path ? makeImagePath(tv.backdrop_path || tv.poster_path, "w500") : NEXFLIX_LOGO_URL} alt="img" />
+                        <Info variants={infoVariants}>
+                          {/* 부모로부터 hover */}
+                          <h4>{tv.name}</h4>
+                        </Info>
+                      </Box>
+                    ))}
+                </Row>
+              </AnimatePresence>
+              <Btn onClick={nextRow3}>next</Btn>
             </Slider_row>
           </Slider>
 
@@ -419,8 +467,8 @@ function Tv() {
                         <div>
                           <h4>Genres : &nbsp;</h4>
                           <ul>
-                            {detail?.genres.map((i) => (
-                              <li>{i.name}&nbsp;/</li>
+                            {detail?.genres.map((i, index) => (
+                              <li key={index}>{i.name}&nbsp;/</li>
                             ))}
                           </ul>
                         </div>
