@@ -29,6 +29,17 @@ interface ITv {
   overview: string;
 }
 
+interface ISearch {
+  id: number;
+  backdrop_path: string;
+  title: string;
+  name: string;
+  media_type: string;
+  poster_path: string;
+  overview: string;
+  vote_average: number;
+}
+
 //받아오는 정화정보에 대한 타입지정(Home.tsx)
 export interface IGetMoviesResult {
   dates: {
@@ -54,6 +65,7 @@ export interface IGetMovieDetail {
   homepage: string;
   id: number;
   title: string;
+  name: string;
   runtime: number;
   tagline: string;
   overview: string;
@@ -80,6 +92,14 @@ export interface IGetTvsDetail {
   overview: string;
   poster_path: string;
   type: string;
+}
+
+//multi search 결과
+export interface IGetSearchResult {
+  page: number;
+  results: ISearch[];
+  total_pages: number;
+  total_results: number;
 }
 
 //fetch함수를 통해 영화 정보를 받아옴
@@ -114,4 +134,10 @@ export function getTvOnair() {
 //TV show Detail
 export function tvShowDetail(tvId: string) {
   return fetch(`${BASE_PATH}/tv/${tvId}?api_key=${API_KEY}`).then((response) => response.json());
+}
+
+//multiSearch
+export function multiSearch(keyword: string) {
+  console.log(keyword);
+  return fetch(`${BASE_PATH}/search/multi?api_key=${API_KEY}&query=${keyword}`).then((response) => response.json());
 }

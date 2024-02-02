@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import Tv from "./Routers/Tv";
 import Search from "./Routers/Search";
 import Home from "./Routers/Home";
+import Detail from "./Components/Detail";
 
 const Router = createBrowserRouter([
   {
@@ -23,6 +24,10 @@ const Router = createBrowserRouter([
   {
     path: `search`,
     element: <Search />,
+  },
+  {
+    path: `detail/:id`,
+    element: <Detail />,
   },
 ]);
 export default Router;
