@@ -71,11 +71,15 @@ const BigDetail = styled.div`
   .production {
     display: flex;
     justify-content: center;
-    padding: 20px;
+    padding: 50px 20px 30px;
     margin-top: 100px;
     background-image: linear-gradient(to top, white, transparent);
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
     ul {
       display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
       gap: 20px;
     }
     li {
@@ -83,7 +87,8 @@ const BigDetail = styled.div`
       align-items: center;
     }
     li > img {
-      max-width: 100px;
+      max-width: 150px;
+      max-height: 150px;
     }
   }
 `;
