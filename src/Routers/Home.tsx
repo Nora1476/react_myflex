@@ -29,8 +29,9 @@ const Title = styled.h2`
   font-size: 68px;
   margin-bottom: 20px;
 `;
+
 const OverView = styled.p`
-  font-size: 28px;
+  font-size: 24px;
   width: 50%;
 `;
 //슬라이더
@@ -39,7 +40,15 @@ const Slider = styled.div`
   top: -100px;
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 80px;
+  h3 {
+    margin-bottom: -70px;
+  }
+`;
+const SubTitle = styled.h3`
+  font-size: 30px;
+  margin-bottom: -30px;
+  padding: 0 30px;
 `;
 const Slider_row = styled.div`
   display: flex;
@@ -55,19 +64,23 @@ const Row = styled(motion.div)`
   right: 0;
   left: 0; */
 `;
-const Btn = styled.button`
+const Btn = styled(motion.button)`
   height: 200px;
   border: none;
   color: white;
   position: absolute;
   z-index: 2;
-  background: transparent;
   display: block;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.2);
   &:first-child {
     left: 0;
   }
   &:last-child {
     right: 0;
+  }
+  span {
+    scale: 1.2;
   }
 `;
 const Box = styled(motion.div)<{ $bgPhoto: string }>`
@@ -75,6 +88,7 @@ const Box = styled(motion.div)<{ $bgPhoto: string }>`
   background: url(${(props) => props.$bgPhoto}) center center / cover;
   height: 200px;
   font-size: 66px;
+  border-radius: 5px;
   cursor: pointer;
   &:first-child {
     transform-origin: center left;
@@ -90,9 +104,30 @@ const Info = styled(motion.div)`
   position: absolute;
   width: 100%;
   bottom: 0;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   h4 {
     text-align: center;
-    font-size: 18px;
+    font-size: 16px;
+  }
+  &:hover {
+    color: white;
+  }
+  span {
+    &:hover::before {
+      content: "상세정보";
+      font-size: 12px;
+      position: absolute;
+      top: -20px;
+      right: -5px;
+      padding: 6px 10px;
+      border-radius: 4px;
+      color: ${(props) => props.theme.black.darker};
+      background-color: ${(props) => props.theme.white.lighter};
+    }
   }
 `;
 
@@ -118,6 +153,7 @@ const BigMovie = styled(motion.div)`
   background-color: ${(props) => props.theme.black.lighter};
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
 `;
 const BigCover = styled.div`
   width: 100%;
@@ -130,7 +166,7 @@ const BigTitle = styled.h3`
   padding: 20px;
   font-size: 38px;
   position: relative;
-  top: -80px;
+  top: -100px;
 `;
 const BigOverview = styled.div`
   padding: 20px;
@@ -209,6 +245,17 @@ const infoVariants = {
       delay: 0.5,
       duaration: 0.1,
       type: "tween",
+    },
+  },
+};
+const btnVariants = {
+  hover: {
+    opacity: 1,
+    scaleX: 1.2,
+    transition: {
+      delay: 0.5,
+      duaration: 0.5,
+      type: "spring",
     },
   },
 };
@@ -325,127 +372,152 @@ function Home() {
           </Banner>
 
           <Slider>
-            <Slider_row>
-              {/* initial 이 false 일 경우 컴포넌트가 처음 마운트될때 오른쪽에서 들어오는 효과 없어짐 
+            <>
+              <SubTitle> 현재상영작 </SubTitle>
+              <Slider_row>
+                {/* initial 이 false 일 경우 컴포넌트가 처음 마운트될때 오른쪽에서 들어오는 효과 없어짐 
                   3. Row에 설정된 exit모션이 끝났을때 toggleLeaving동작하며 index + 1효과 */}
-              <Btn onClick={prevRow1} key={index + 2}>
-                prev
-              </Btn>
-              <AnimatePresence initial={false} custom={isBack} onExitComplete={toggleLeaving}>
-                <Row
-                  //2. 키값만 바꿔줘도 새로운 Row로 인식하여 슬라이드 동작
-                  custom={isBack}
-                  variants={rowVariants}
-                  initial="entry"
-                  animate="visible"
-                  exit="exit"
-                  transition={{ type: "tween" }}
-                  key={index}
-                >
-                  {nowMovie?.results
-                    .slice(1)
-                    .slice(offset * index, offset * index + offset)
-                    .map((movie) => (
-                      <Box
-                        //
-                        key={movie.id}
-                        whileHover="hover"
-                        initial="normal"
-                        variants={boxVariants}
-                        transition={{ type: "tween" }}
-                        $bgPhoto={movie.backdrop_path ? makeImagePath(movie.backdrop_path || movie.poster_path, "w500") : NEXFLIX_LOGO_URL}
-                        onClick={() => onBoxClicked(movie.id + "")}
-                      >
-                        <Info variants={infoVariants}>
-                          {/* 부모로부터 hover */}
-                          <h4>{movie.title}</h4>
-                        </Info>
-                      </Box>
-                    ))}
-                </Row>
-              </AnimatePresence>
-              <Btn onClick={nextRow1} key={index + 1}>
-                next
-              </Btn>
-            </Slider_row>
+                <Btn variants={btnVariants} whileHover="hover" onClick={prevRow1}>
+                  <span className="material-symbols-outlined">arrow_back_ios</span>
+                </Btn>
+                <AnimatePresence initial={false} custom={isBack} onExitComplete={toggleLeaving}>
+                  <Row
+                    //2. 키값만 바꿔줘도 새로운 Row로 인식하여 슬라이드 동작
+                    custom={isBack}
+                    variants={rowVariants}
+                    initial="entry"
+                    animate="visible"
+                    exit="exit"
+                    transition={{ type: "tween" }}
+                    key={index}
+                  >
+                    {nowMovie?.results
+                      .slice(1)
+                      .slice(offset * index, offset * index + offset)
+                      .map((movie) => (
+                        <Box
+                          //
+                          key={movie.id}
+                          whileHover="hover"
+                          initial="normal"
+                          variants={boxVariants}
+                          transition={{ type: "tween" }}
+                          $bgPhoto={movie.backdrop_path ? makeImagePath(movie.backdrop_path || movie.poster_path, "w500") : NEXFLIX_LOGO_URL}
+                          // onClick={() => onBoxClicked(movie.id + "")}
+                        >
+                          <Info variants={infoVariants} key={movie.id}>
+                            {/* 부모로부터 hover */}
+                            <h4>{movie.title}</h4>
+                            <span className="material-symbols-outlined" onClick={() => onBoxClicked(movie.id + "")}>
+                              expand_circle_down
+                            </span>
+                          </Info>
+                        </Box>
+                      ))}
+                  </Row>
+                </AnimatePresence>
+                <Btn variants={btnVariants} whileHover="hover" onClick={nextRow1}>
+                  <span className="material-symbols-outlined">arrow_forward_ios</span>
+                </Btn>
+              </Slider_row>
+            </>
 
-            <Slider_row>
-              <Btn onClick={prevRow2}>prev</Btn>
-              <AnimatePresence initial={false} custom={isBack} onExitComplete={toggleLeaving}>
-                <Row
-                  //
-                  custom={isBack}
-                  variants={rowVariants}
-                  initial="entry"
-                  animate="visible"
-                  exit="exit"
-                  transition={{ type: "tween" }}
-                  key={indexRow2}
-                >
-                  {upcoming?.results
-                    .slice(1)
-                    .slice(offset * indexRow2, offset * indexRow2 + offset)
-                    .map((movie) => (
-                      <Box
-                        //
-                        key={movie.id}
-                        whileHover="hover"
-                        initial="normal"
-                        variants={boxVariants}
-                        transition={{ type: "tween" }}
-                        $bgPhoto={movie.backdrop_path ? makeImagePath(movie.backdrop_path || movie.poster_path, "w500") : NEXFLIX_LOGO_URL}
-                        onClick={() => onBoxClicked(movie.id + "")}
-                      >
-                        {" "}
-                        <Info variants={infoVariants}>
-                          {/* 부모로부터 hover */}
-                          <h4>{movie.title}</h4>
-                        </Info>
-                      </Box>
-                    ))}
-                </Row>
-              </AnimatePresence>
-              <Btn onClick={nextRow2}>next</Btn>
-            </Slider_row>
+            <>
+              <SubTitle> 곧 개봉될 영화 </SubTitle>
+              <Slider_row>
+                <Btn variants={btnVariants} whileHover="hover" onClick={prevRow2}>
+                  <span className="material-symbols-outlined">arrow_back_ios</span>
+                </Btn>
+                <AnimatePresence initial={false} custom={isBack} onExitComplete={toggleLeaving}>
+                  <Row
+                    //
+                    custom={isBack}
+                    variants={rowVariants}
+                    initial="entry"
+                    animate="visible"
+                    exit="exit"
+                    transition={{ type: "tween" }}
+                    key={indexRow2}
+                  >
+                    {upcoming?.results
+                      .slice(1)
+                      .slice(offset * indexRow2, offset * indexRow2 + offset)
+                      .map((movie) => (
+                        <Box
+                          //
+                          key={movie.id}
+                          whileHover="hover"
+                          initial="normal"
+                          variants={boxVariants}
+                          transition={{ type: "tween" }}
+                          $bgPhoto={movie.backdrop_path ? makeImagePath(movie.backdrop_path || movie.poster_path, "w500") : NEXFLIX_LOGO_URL}
+                          // onClick={() => onBoxClicked(movie.id + "")}
+                        >
+                          {" "}
+                          <Info variants={infoVariants} key={movie.id}>
+                            {/* 부모로부터 hover */}
+                            <h4>{movie.title}</h4>
+                            <span className="material-symbols-outlined" onClick={() => onBoxClicked(movie.id + "")}>
+                              expand_circle_down
+                            </span>
+                          </Info>
+                        </Box>
+                      ))}
+                  </Row>
+                </AnimatePresence>
+                <Btn variants={btnVariants} whileHover="hover" onClick={nextRow2}>
+                  <span className="material-symbols-outlined">arrow_forward_ios</span>
+                </Btn>
+              </Slider_row>
+            </>
 
-            <Slider_row>
-              <Btn onClick={prevRow3}>prev</Btn>
-              <AnimatePresence initial={false} custom={isBack} onExitComplete={toggleLeaving}>
-                <Row
-                  //
-                  custom={isBack}
-                  variants={rowVariants}
-                  initial="entry"
-                  animate="visible"
-                  exit="exit"
-                  transition={{ type: "tween" }}
-                  key={indexRow3}
-                >
-                  {topRated?.results
-                    .slice(1)
-                    .slice(offset * indexRow3, offset * indexRow3 + offset)
-                    .map((movie) => (
-                      <Box
-                        //
-                        key={movie.id}
-                        whileHover="hover"
-                        initial="normal"
-                        variants={boxVariants}
-                        transition={{ type: "tween" }}
-                        $bgPhoto={movie.backdrop_path ? makeImagePath(movie.backdrop_path || movie.poster_path, "w500") : NEXFLIX_LOGO_URL}
-                        onClick={() => onBoxClicked(movie.id + "")}
-                      >
-                        {" "}
-                        <Info variants={infoVariants}>
-                          {/* 부모로부터 hover */}
-                          <h4>{movie.title}</h4>
-                        </Info>
-                      </Box>
-                    ))}
-                </Row>
-              </AnimatePresence>
-              <Btn onClick={nextRow3}>next</Btn>
-            </Slider_row>
+            <>
+              <SubTitle> 인기순 </SubTitle>
+              <Slider_row>
+                <Btn variants={btnVariants} whileHover="hover" onClick={prevRow3}>
+                  <span className="material-symbols-outlined">arrow_back_ios</span>
+                </Btn>
+                <AnimatePresence initial={false} custom={isBack} onExitComplete={toggleLeaving}>
+                  <Row
+                    //
+                    custom={isBack}
+                    variants={rowVariants}
+                    initial="entry"
+                    animate="visible"
+                    exit="exit"
+                    transition={{ type: "tween" }}
+                    key={indexRow3}
+                  >
+                    {topRated?.results
+                      .slice(1)
+                      .slice(offset * indexRow3, offset * indexRow3 + offset)
+                      .map((movie) => (
+                        <Box
+                          //
+                          key={movie.id}
+                          whileHover="hover"
+                          initial="normal"
+                          variants={boxVariants}
+                          transition={{ type: "tween" }}
+                          $bgPhoto={movie.backdrop_path ? makeImagePath(movie.backdrop_path || movie.poster_path, "w500") : NEXFLIX_LOGO_URL}
+                          // onClick={() => onBoxClicked(movie.id + "")}
+                        >
+                          <Info variants={infoVariants} key={movie.id}>
+                            {/* 부모로부터 hover */}
+                            <h4>{movie.title}</h4>
+                            <span className="material-symbols-outlined" onClick={() => onBoxClicked(movie.id + "")}>
+                              expand_circle_down
+                            </span>
+                          </Info>
+                        </Box>
+                      ))}
+                  </Row>
+                </AnimatePresence>
+                <Btn variants={btnVariants} whileHover="hover" onClick={nextRow3}>
+                  <span className="material-symbols-outlined">arrow_forward_ios</span>
+                </Btn>
+              </Slider_row>
+            </>
           </Slider>
 
           <AnimatePresence>
@@ -468,10 +540,11 @@ function Home() {
                         {detail?.title}({detail?.vote_average?.toFixed(1)})
                       </BigTitle>
                       <BigOverview>
-                        <h4> "{detail?.tagline}" </h4>
+                        {detail?.tagline ? <h4> "{detail?.tagline}" </h4> : null}
                         <p>{content()} </p>
                       </BigOverview>
                       <BigDetail>
+                        <div>RunTime : &nbsp;{detail?.runtime} 분</div>
                         <div>
                           <h4>Genres : &nbsp;</h4>
                           <ul>

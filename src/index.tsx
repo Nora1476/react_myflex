@@ -62,7 +62,8 @@ body {
   line-height: 1.2;
   color:${(props) => props.theme.white.darker};
   background: black;
-  overflow-x: clip;
+  overflow-x: hidden;
+  min-width: 1200px;
 
 }
 a {

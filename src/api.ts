@@ -71,6 +71,8 @@ export interface IGetMovieDetail {
   overview: string;
   poster_path: string;
   vote_average: number;
+  production_companies: [{ id: number; logo_path: string }];
+  release_date: number;
 }
 
 //받아오는 TV정보에 대한 타입지정(Home.tsx)
@@ -106,19 +108,19 @@ export interface IGetSearchResult {
 //&language=ko-Kr 주소끝에 삽입
 //현재상영작 now_playing
 export function getMovies() {
-  return fetch(`${BASE_PATH}/movie/now_playing?api_key=${API_KEY}`).then((response) => response.json());
+  return fetch(`${BASE_PATH}/movie/now_playing?api_key=${API_KEY}&language=ko-Kr`).then((response) => response.json());
 }
 //상위 랭크 top_rated
 export function topRatedMovies() {
-  return fetch(`${BASE_PATH}/movie/top_rated?api_key=${API_KEY}`).then((response) => response.json());
+  return fetch(`${BASE_PATH}/movie/top_rated?api_key=${API_KEY}&language=ko-Kr`).then((response) => response.json());
 }
 //상위 랭크 top_rated
 export function upcomingMovies() {
-  return fetch(`${BASE_PATH}/movie/upcoming?api_key=${API_KEY}`).then((response) => response.json());
+  return fetch(`${BASE_PATH}/movie/upcoming?api_key=${API_KEY}&language=ko-Kr`).then((response) => response.json());
 }
 //TV show Detail
 export function movieDetail(movieId: string) {
-  return fetch(`${BASE_PATH}/movie/${movieId}?api_key=${API_KEY}`).then((response) => response.json());
+  return fetch(`${BASE_PATH}/movie/${movieId}?api_key=${API_KEY}&language=ko-Kr`).then((response) => response.json());
 }
 
 //현재상영 TV show
@@ -139,5 +141,5 @@ export function tvShowDetail(tvId: string) {
 //multiSearch
 export function multiSearch(keyword: string) {
   console.log(keyword);
-  return fetch(`${BASE_PATH}/search/multi?api_key=${API_KEY}&query=${keyword}`).then((response) => response.json());
+  return fetch(`${BASE_PATH}/search/movie?api_key=${API_KEY}&query=${keyword}&language=ko-Kr`).then((response) => response.json());
 }
