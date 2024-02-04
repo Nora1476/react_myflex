@@ -8,13 +8,14 @@ const Router = createBrowserRouter([
   {
     path: `${process.env.PUBLIC_URL}/`,
     element: <Home />,
+    children: [],
   },
   {
     path: `movies/:id`,
     element: <Home />,
   },
   {
-    path: `tv`,
+    path: `${process.env.PUBLIC_URL}/tv`,
     element: <Tv />,
   },
   {

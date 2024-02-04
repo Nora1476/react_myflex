@@ -544,7 +544,7 @@ function Home() {
                         <p>{content()} </p>
                       </BigOverview>
                       <BigDetail>
-                        <div>RunTime : &nbsp;{detail?.runtime} 분</div>
+                        <div>RunTime : &nbsp;{detail?.runtime}</div>
                         <div>
                           <h4>Genres : &nbsp;</h4>
                           <ul>

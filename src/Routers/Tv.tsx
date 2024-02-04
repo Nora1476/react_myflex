@@ -346,11 +346,11 @@ function Tv() {
   // const clickedMovie = bigTvMatch?.params.tvId && airing?.results.find((tv) => String(tv.id) === bigTvMatch.params.tvId);
   //Row 슬라이드에 movie를 클릭하면 해당링크로 이동(상세페이지)  및 영화 디테일정보 불러오기
   const onBoxClicked = (tvId: string) => {
-    navigate(`tv/${tvId}`);
+    navigate(`/tv/${tvId}`);
   };
   //오버레이부분 클릭시 홈링크로 이동 (상세페이지 모달끄는 용도)
   const onOverlayclick = () => {
-    navigate(`tv`);
+    navigate(`${process.env.PUBLIC_URL}/tv`);
   };
 
   //overview 글자수 제한

@@ -94,11 +94,7 @@ function Search() {
   const navigate = useNavigate();
   //Row 슬라이드에 movie를 클릭하면 해당링크로 이동(상세페이지)
   const onBoxClicked = (movieId: string) => {
-    navigate(`detail/${movieId}`);
-  };
-  //오버레이부분 클릭시 홈링크로 이동 (상세페이지 모달끄는 용도)
-  const onOverlayclick = () => {
-    navigate(`${process.env.PUBLIC_URL}/`);
+    navigate(`/detail/${movieId}`);
   };
 
   return (
