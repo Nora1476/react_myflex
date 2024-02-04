@@ -109,8 +109,9 @@ interface IForm {
 
 function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
-  const homeMatch = useMatch(`${process.env.PUBLIC_URL}/`);
+  const homeMatch = useMatch(`/`);
   const tvMatch = useMatch("tv");
+  console.log(homeMatch);
 
   const inputAnimation = useAnimation();
   const navAnimation = useAnimation();
@@ -144,7 +145,7 @@ function Header() {
   const navigate = useNavigate();
   const onValid = (data: IForm) => {
     // navigate에 state전달 하는 방법 navigate(to, { state: { key: value } });
-    navigate(`/search?keyword=${data.keyword}`, { state: { key: data.keyword }, replace: true });
+    navigate(`search?keyword=${data.keyword}`, { state: { key: data.keyword }, replace: true });
     navigate(0);
     console.log(data.keyword);
   };
@@ -156,7 +157,7 @@ function Header() {
       initial={"top"}
     >
       <Col>
-        <Link to={`${process.env.PUBLIC_URL}/`}>
+        <Link to={`/`} reloadDocument>
           <Logo
             //로고모션
             variants={logoVariants}
@@ -171,14 +172,12 @@ function Header() {
         </Link>
         <Items>
           <Item>
-            <Link to={`${process.env.PUBLIC_URL}/`} reloadDocument>
-              {" "}
+            <Link to={`/`} reloadDocument>
               Home{homeMatch && <Circle layoutId="circle" />}
             </Link>
           </Item>
           <Item>
             <Link to="tv" reloadDocument>
-              {" "}
               TV Show{tvMatch && <Circle layoutId="circle" />}
             </Link>
           </Item>

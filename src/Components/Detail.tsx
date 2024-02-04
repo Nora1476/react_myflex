@@ -94,7 +94,7 @@ const BigDetail = styled.div`
 `;
 
 function Detail() {
-  const bigMovieMatch: PathMatch<string> | null = useMatch("/detail/:Id");
+  const bigMovieMatch: PathMatch<string> | null = useMatch("detail/:Id");
   const { data: detail, isLoading: detailLoading } = useQuery<IGetMovieDetail>({
     //
     queryKey: ["movie", bigMovieMatch?.params.Id],
