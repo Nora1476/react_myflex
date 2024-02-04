@@ -33,6 +33,7 @@ const Title = styled.h2`
 const OverView = styled.p`
   font-size: 24px;
   width: 50%;
+  line-height: 1.4;
 `;
 //슬라이더
 const Slider = styled.div`
