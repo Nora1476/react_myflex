@@ -23,7 +23,7 @@ const Router = createBrowserRouter([
     element: <Tv />,
   },
   {
-    path: `search`,
+    path: `${process.env.PUBLIC_URL}/search`,
     element: <Search />,
   },
   {

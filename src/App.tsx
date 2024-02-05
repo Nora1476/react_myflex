@@ -9,7 +9,7 @@ function App() {
         <title>Myflex</title>
       </Helmet>
       <RouterProvider router={Router}></RouterProvider>;
-      <BrowserRouter>
+      <BrowserRouter basename={process.env.PUBLIC_URL}>
         <Header />
       </BrowserRouter>
     </>

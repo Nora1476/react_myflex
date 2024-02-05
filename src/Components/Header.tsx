@@ -109,8 +109,8 @@ interface IForm {
 
 function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
-  const homeMatch = useMatch(`${process.env.PUBLIC_URL}/`);
-  const tvMatch = useMatch(`${process.env.PUBLIC_URL}/tv`);
+  const homeMatch = useMatch(`/`);
+  const tvMatch = useMatch(`/tv`);
   console.log(homeMatch, tvMatch);
 
   const inputAnimation = useAnimation();
@@ -157,7 +157,7 @@ function Header() {
       initial={"top"}
     >
       <Col>
-        <Link to={`${process.env.PUBLIC_URL}/`} reloadDocument>
+        <Link to={`/`} reloadDocument>
           <Logo
             //로고모션
             variants={logoVariants}
@@ -172,12 +172,12 @@ function Header() {
         </Link>
         <Items>
           <Item>
-            <Link to={`${process.env.PUBLIC_URL}/`} reloadDocument>
+            <Link to={`/`} reloadDocument>
               Home{homeMatch && <Circle layoutId="circle" />}
             </Link>
           </Item>
           <Item>
-            <Link to={`${process.env.PUBLIC_URL}/tv`} reloadDocument>
+            <Link to={`/tv`} reloadDocument>
               TV Show{tvMatch && <Circle layoutId="circle" />}
             </Link>
           </Item>
