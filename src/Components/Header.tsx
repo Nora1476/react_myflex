@@ -111,7 +111,6 @@ function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const homeMatch = useMatch(`/`);
   const tvMatch = useMatch(`/tv`);
-  console.log(homeMatch, tvMatch);
 
   const inputAnimation = useAnimation();
   const navAnimation = useAnimation();
@@ -147,7 +146,6 @@ function Header() {
     // navigate에 state전달 하는 방법 navigate(to, { state: { key: value } });
     navigate(`search?keyword=${data.keyword}`, { state: { key: data.keyword }, replace: true });
     navigate(0);
-    console.log(data.keyword);
   };
   return (
     <Nav

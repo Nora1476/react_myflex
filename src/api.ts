@@ -140,6 +140,6 @@ export function tvShowDetail(tvId: string) {
 
 //multiSearch
 export function multiSearch(keyword: string) {
-  console.log(keyword);
+  // console.log(keyword);
   return fetch(`${BASE_PATH}/search/movie?api_key=${API_KEY}&query=${keyword}&language=ko-Kr`).then((response) => response.json());
 }

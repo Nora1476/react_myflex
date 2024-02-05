@@ -291,7 +291,6 @@ function Tv() {
     }
   };
   const prevRow2 = () => {
-    console.log("클릭", leaving, index);
     if (popular) {
       if (leaving) return;
       toggleLeaving();
@@ -300,7 +299,6 @@ function Tv() {
     }
   };
   const prevRow3 = () => {
-    console.log("클릭", leaving, index);
     if (onair) {
       if (leaving) return;
       toggleLeaving();
@@ -328,7 +326,6 @@ function Tv() {
   };
 
   const toggleLeaving = () => {
-    console.log(leaving);
     setLeaving((prev) => !prev);
   };
 

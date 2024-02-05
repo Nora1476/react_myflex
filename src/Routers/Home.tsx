@@ -286,7 +286,6 @@ function Home() {
     }
   };
   const prevRow2 = () => {
-    console.log("클릭", leaving, index);
     if (topRated) {
       if (leaving) return;
       toggleLeaving();
@@ -295,7 +294,6 @@ function Home() {
     }
   };
   const prevRow3 = () => {
-    console.log("클릭", leaving, index);
     if (upcoming) {
       if (leaving) return;
       toggleLeaving();
@@ -316,7 +314,6 @@ function Home() {
     setIndexRow2((prev) => (prev === maxIndex ? 0 : prev + 1));
   };
   const nextRow3 = () => {
-    console.log("클릭", leaving, index);
     if (leaving) return; //슬라이드 처음 시작일 경우 false 값으로  아래 동작 실행
     toggleLeaving();
     setIsBack(false); //슬라이드 다음 버튼 모션동작 컨트롤
